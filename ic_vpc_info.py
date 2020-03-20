@@ -44,7 +44,7 @@ EXAMPLES = '''
 
 # Retrieve a specific VPC
 - ic_vpc_info:
-    vpc: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+    id: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
 '''
 
 
@@ -54,7 +54,10 @@ from ibmcloud_python_sdk import vpc
 
 def run_module():
     module_args = dict(
-        vpc=dict(
+        id=dict(
+            type='str',
+            required=False),
+        name=dict(
             type='str',
             required=False),
     )
@@ -64,10 +67,12 @@ def run_module():
         supports_check_mode=False
     )
 
-    if module.params['vpc'] is None:
-        result = vpc.get_vpcs()
+    if module.params['id'] is not None:
+        result = vpc.get_vpc_by_id(module.params['id'])
+    if module.params['name'] is not None:
+        result = vpc.get_vpc_by_name(module.params['name'])
     else:
-        result = vpc.get_vpc(module.params['vpc'])
+        result = vpc.get_vpcs()
 
     module.exit_json(**result)
 

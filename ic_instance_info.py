@@ -44,7 +44,7 @@ EXAMPLES = '''
 
 # Retrieve a specific instance
 - ic_instance_info:
-    instance: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+    id: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
 '''
 
 
@@ -54,7 +54,10 @@ from ibmcloud_python_sdk import instance
 
 def run_module():
     module_args = dict(
-        instance=dict(
+        id=dict(
+            type='str',
+            required=False),
+        name=dict(
             type='str',
             required=False),
     )
@@ -64,10 +67,12 @@ def run_module():
         supports_check_mode=False
     )
 
-    if module.params['instance'] is None:
-        result = instance.get_instances()
+    if module.params['id'] is not None:
+        result = instance.get_instance_by_id(module.params['id'])
+    if module.params['name'] is not None:
+        result = instance.get_instance_by_name(module.params['name'])
     else:
-        result = instance.get_instance(module.params['instance'])
+        result = instance.get_instances()
 
     module.exit_json(**result)
 
