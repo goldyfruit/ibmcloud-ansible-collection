@@ -22,8 +22,8 @@ requirements:
 options:
     vpc:
         description:
-            -  Name that has to be given to the VPC.
-               During the removal an UUID could be used.
+            -  Name that has to be given to the VPC to create or delete.
+                During the removal an UUID could be used.
         required: true
     resource_group:
         description:
