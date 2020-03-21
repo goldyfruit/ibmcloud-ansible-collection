@@ -19,12 +19,12 @@ description:
 notes:
     - The result contains a list of VPC.
 requirements:
-    - "python >= 3.5"
+    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     vpc:
         description:
-            - restrict results to vpc with UUID matching
+            - restrict results to vpc with UUID or name matching
         required: false
 extends_documentation_fragment:
     - ibmcloud
@@ -42,22 +42,20 @@ EXAMPLES = '''
 - debug:
     var: vpcs
 
-# Retrieve a specific VPC
+# Retrieve a specific VPC by ID or by name
 - ic_vpc_info:
-    id: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+    vpc: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
 '''
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import vpc
+from ibmcloud_python_sdk import vpc as ic
+import json
 
 
 def run_module():
     module_args = dict(
-        id=dict(
-            type='str',
-            required=False),
-        name=dict(
+        vpc=dict(
             type='str',
             required=False),
     )
@@ -67,17 +65,23 @@ def run_module():
         supports_check_mode=False
     )
 
-    if module.params['id'] is not None:
-        result = vpc.get_vpc_by_id(module.params['id'])
-    if module.params['name'] is not None:
-        result = vpc.get_vpc_by_name(module.params['name'])
+    vpc = ic.Vpc()
+
+    if module.params['vpc']:
+        result = vpc.get_vpc_by_name(module.params['vpc'])
+        if "errors" in result:
+            result = vpc.get_vpc_by_id(module.params['vpc'])
+            if "errors" in result:
+                 module.fail_json(msg="vpc not found")
     else:
         result = vpc.get_vpcs()
 
     module.exit_json(**result)
 
+
 def main():
     run_module()
+
 
 if __name__ == '__main__':
     main()
