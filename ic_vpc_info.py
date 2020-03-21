@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_vpc_info
-short_description: Retrieve information about one or more VPC (Virtual Private Cloud)
+short_description: Retrieve information about VPC (Virtual Private Cloud)
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -48,11 +48,6 @@ EXAMPLES = '''
 '''
 
 
-from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import vpc as ic
-import json
-
-
 def run_module():
     module_args = dict(
         vpc=dict(
@@ -72,9 +67,11 @@ def run_module():
         if "errors" in result:
             result = vpc.get_vpc_by_id(module.params['vpc'])
             if "errors" in result:
-                 module.fail_json(msg="vpc not found")
+                module.fail_json(msg="vpc not found")
     else:
         result = vpc.get_vpcs()
+        if "errors" in result:
+            module.fail_json(msg=result["errors"])
 
     module.exit_json(**result)
 
