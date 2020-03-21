@@ -24,7 +24,7 @@ requirements:
 options:
     vpc:
         description:
-            - restrict results to vpc with UUID or name matching
+            - Restrict results to vpc with UUID or name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
