@@ -11,11 +11,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_instance_info
-short_description: Retrieve information about one or more instance
+short_description: Retrieve information about one or more instances
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about instance from IBM Cloud.
+    - Retrieve information about instance(s) from IBM Cloud.
 notes:
     - The result contains a list of VPC.
 requirements:
@@ -24,7 +24,7 @@ requirements:
 options:
     instance:
         description:
-            - restrict results to instance with UUID matching
+            - Restrict results to instance with UUID or name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
@@ -42,22 +42,19 @@ EXAMPLES = '''
 - debug:
     var: instances
 
-# Retrieve a specific instance
+# Retrieve a specific instance by ID
 - ic_instance_info:
-    id: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+    instance: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
 '''
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import instance
+from ibmcloud_python_sdk import instance as ic
 
 
 def run_module():
     module_args = dict(
-        id=dict(
-            type='str',
-            required=False),
-        name=dict(
+        instance=dict(
             type='str',
             required=False),
     )
@@ -67,14 +64,19 @@ def run_module():
         supports_check_mode=False
     )
 
-    if module.params['id'] is not None:
-        result = instance.get_instance_by_id(module.params['id'])
-    if module.params['name'] is not None:
-        result = instance.get_instance_by_name(module.params['name'])
+    instance = ic.Instance()
+
+    if module.params['instance']:
+        result = instance.get_instance_by_name(module.params['instance'])
+        if "errors" in result:
+            result = instance.get_instance_by_id(module.params['instance'])
+            if "errors" in result:
+                 module.fail_json(msg="instance not found")
     else:
         result = instance.get_instances()
 
     module.exit_json(**result)
+
 
 def main():
     run_module()
