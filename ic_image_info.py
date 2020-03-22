@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+
+
+from ansible.module_utils.basic import AnsibleModule
+from ibmcloud_python_sdk import image as ic
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -11,13 +16,13 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_image_info
-short_description: Retrieve information about one or more Image (Virtual Private Cloud)
-author: Gaëtan Trellu (@goldyfruit)
+short_description: Retrieve information about images
+author: James Regis
 version_added: "2.9"
 description:
-    - Retrieve information about Image from IBM Cloud.
+    - Retrieve information about images from IBM Cloud.
 notes:
-    - The result contains a list of Image.
+    - The result contains a list of images.
 requirements:
     - "python >= 3.6"
     - "ibmcloud-python-sdk"
@@ -31,10 +36,10 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve all Image list
+# Retrieve image list
 - ic_image_info:
 
-# Retrieve all Image list and register the value
+# Retrieve image list and register the value
 - ic_image_info:
   register: images
 
@@ -42,15 +47,10 @@ EXAMPLES = '''
 - debug:
     var: images
 
-# Retrieve a specific Image by ID or by name
+# Retrieve a specific image by ID or by name
 - ic_image_info:
     image: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
 '''
-
-
-from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import image as ic
-import json
 
 
 def run_module():
@@ -72,7 +72,7 @@ def run_module():
         if "errors" in result:
             result = image.get_image_by_id(module.params['image'])
             if "errors" in result:
-                 module.fail_json(msg="image not found")
+                module.fail_json(msg="image not found")
     else:
         result = image.get_images()
         if "errors" in result:

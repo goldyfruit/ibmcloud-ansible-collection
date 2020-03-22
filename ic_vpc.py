@@ -30,7 +30,7 @@ options:
         description:
             -  Name or UUID of the resource group where the VPC has to
                be created.
-        required: true
+        required: false
     address_prefix_management:
         description:
             -  Indicates whether a default address prefix should be
@@ -82,7 +82,7 @@ def run_module():
             required=True),
         resource_group=dict(
             type='str',
-            required=True),
+            required=False),
         address_prefix_management=dict(
             type='str',
             default='auto',
