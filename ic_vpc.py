@@ -137,8 +137,8 @@ def run_module():
                     module.exit_json(changed=False, msg=(
                         f"vpc {module.params['vpc']} already exists"))
 
-            module.exit_json(changed=True, msg=(
-                f"vpc {module.params['vpc']} successfully created"))
+        module.exit_json(changed=True, msg=(
+            f"vpc {module.params['vpc']} successfully created"))
 
 
 def main():
