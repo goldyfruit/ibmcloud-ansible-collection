@@ -122,7 +122,7 @@ def run_module():
             f"vpc {module.params['vpc']} successfully deleted"))
 
     else:
-        # pep8 trick
+        # flake8 trick
         addr_mgmt = module.params["address_prefix_management"]
         result = vpc.create_vpc(name=module.params['vpc'],
                                 resource_group=module.params["resource_group"],
