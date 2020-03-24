@@ -112,7 +112,7 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        f"key {module.params['key']} already absent"))
+                        f"key {module.params['key']} doesn't exist"))
 
         module.exit_json(changed=True, msg=(
             f"key {module.params['key']} successfully deleted"))
@@ -124,12 +124,15 @@ def run_module():
                                 type=module.params["type"])
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "conflict_field":
+            for key_name in result["errors"]:
+                if key_name["code"] != "conflict_field":
                     module.fail_json(msg=result["errors"])
                 else:
-                    module.exit_json(changed=False, msg=(
-                        f"key {module.params['key']} already exists"))
+                    exist = key.get_key_by_name(module.params['key'])
+                    if "errors" in exist:
+                        module.fail_json(msg=exist["errors"])
+                    else:
+                        module.exit_json(changed=False, msg=(exist))
 
         module.exit_json(changed=True, msg=(
             f"key {module.params['key']} successfully created"))
