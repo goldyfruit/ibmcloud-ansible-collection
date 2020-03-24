@@ -15,8 +15,8 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_resource_group_info
-short_description: Retrieve information about resource groups
+module: ic_is_resource_group_info
+short_description: Retrieve information about resource groups.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -36,11 +36,11 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve all resource groups list
-- ic_resource_group_info:
+# Retrieve resource group list
+- ic_is_resource_group_info:
 
-# Retrieve all resource groups list and register the value
-- ic_resource_group_info:
+# Retrieve resource group list and register the value
+- ic_is_resource_group_info:
   register: resource_groups
 
 # Display resource groups registered value
@@ -48,7 +48,7 @@ EXAMPLES = '''
     var: resource_groups
 
 # Retrieve resource groups for a specific account
-- ic_resource_group_info:
+- ic_is_resource_group_info:
     account: a3d7b8d01e261c24677937c29ab33f3c
 '''
 

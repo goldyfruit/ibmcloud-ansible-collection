@@ -14,12 +14,12 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_instance
+module: ic_is_instance
 short_description: Create or delete VSI (Virtual Server Instance)
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete VSI on IBM Cloud.
+    - Create or delete VSI (Virtual Server Instance) on IBM Cloud.
 requirements:
     - "python >= 3.6"
     - "ibmcloud-python-sdk"
@@ -79,7 +79,7 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Create instance (VSI)
-- ic_instance:
+- ic_is_instance:
     instance: ibmcloud-vsi
     keys:
       - ibmcloud-ssh-key
@@ -89,7 +89,7 @@ EXAMPLES = '''
     zone: us-south-3
 
 # Create instance within a specific VPC
-- ic_instance:
+- ic_is_instance:
     instance: ibmcloud-vsi
     keys:
       - ibmcloud-ssh-key
@@ -101,7 +101,7 @@ EXAMPLES = '''
     zone: us-south-3
 
 # Delete instance
-- ic_instance:
+- ic_is_instance:
     instance: ibmcloud-vsi
     state: absent
 '''
@@ -150,7 +150,7 @@ def run_module():
 
     instance = ic.Instance()
 
-    # flake8 trick
+    # flake8 trick to avoid complaint about line length
     name = module.params['instance']
     keys = module.params['keys']
     profile = module.params['profile']

@@ -14,7 +14,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_key
+module: ic_is_key
 short_description: Create or delete a SSH key
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -59,14 +59,14 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Create SSH key
-- ic_key:
+- ic_is_key:
     name: ibmcloud-key-user1
     public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChXZYzE545Uc5PU...
     resouge_group: advisory
     type: rsa
 
 # Delete SSH key
-- ic_key:
+- ic_is_key:
     vpc: ibmcloud-key-user1
     resouge_group: advisory
     state: absent

@@ -15,8 +15,8 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_profile_info
-short_description: Retrieve information about instance profile(s)
+module: ic_is_profile_info
+short_description: Retrieve information about instance profile
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -24,7 +24,7 @@ description:
 notes:
     - The result contains a list of instance profiles.
 requirements:
-    - "python >= 3.5"
+    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     profile:
@@ -36,11 +36,11 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve all instance profiles list
-- ic_profile_info:
+# Retrieve instance profiles list
+- ic_is_profile_info:
 
-# Retrieve all instance profiles and register the value
-- ic_profile_info:
+# Retrieve instance profiles and register the value
+- ic_is_profile_info:
   register: profiles
 
 # Display profiles registered value
@@ -48,8 +48,8 @@ EXAMPLES = '''
     var: profiles
 
 # Retrieve a specific instance profile by name
-- ic_profile_info:
-    name: cx2-4x8
+- ic_is_profile_info:
+    profile: cx2-4x8
 '''
 
 

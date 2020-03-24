@@ -15,16 +15,16 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_instance_info
-short_description: Retrieve information about one or more instances
+module: ic_is_instance_info
+short_description: Retrieve information about one or more instances.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
     - Retrieve information about instance(s) from IBM Cloud.
 notes:
-    - The result contains a list of VPC.
+    - The result contains a list of instances.
 requirements:
-    - "python >= 3.5"
+    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     instance:
@@ -37,10 +37,10 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Retrieve all instances list
-- ic_instance_info:
+- ic_is_instance_info:
 
 # Retrieve all instance list and register the value
-- ic_instance_info:
+- ic_is_instance_info:
   register: instances
 
 # Display instances registered value
@@ -48,8 +48,8 @@ EXAMPLES = '''
     var: instances
 
 # Retrieve a specific instance by ID
-- ic_instance_info:
-    instance: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+- ic_is_instance_info:
+    instance: ibmcloud-vsi-ansible
 '''
 
 

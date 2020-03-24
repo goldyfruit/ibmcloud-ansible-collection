@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_key_info
+module: ic_is_key_info
 short_description: Retrieve information about keys
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -37,10 +37,10 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Retrieve key list
-- ic_key_info:
+- ic_is_key_info:
 
 # Retrieve key list and register the value
-- ic_key_info:
+- ic_is_key_info:
   register: keys
 
 # Display keys registered value
@@ -48,8 +48,8 @@ EXAMPLES = '''
     var: keys
 
 # Retrieve a specific key by ID or by name
-- ic_key_info:
-    key: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+- ic_is_key_info:
+    key: ibmcloud-ssh-key
 '''
 
 

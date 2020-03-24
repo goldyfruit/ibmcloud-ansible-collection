@@ -15,8 +15,8 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_image_info
-short_description: Retrieve information about images
+module: ic_is_image_info
+short_description: Retrieve information about one or more images.
 author: James Regis
 version_added: "2.9"
 description:
@@ -37,10 +37,10 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Retrieve image list
-- ic_image_info:
+- ic_is_image_info:
 
 # Retrieve image list and register the value
-- ic_image_info:
+- ic_is_image_info:
   register: images
 
 # Display images registered value
@@ -48,8 +48,8 @@ EXAMPLES = '''
     var: images
 
 # Retrieve a specific image by ID or by name
-- ic_image_info:
-    image: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+- ic_is_image_info:
+    image: ibm-redhat-7-6-minimal-amd64-1
 '''
 
 

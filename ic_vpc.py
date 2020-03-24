@@ -11,12 +11,12 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_vpc
+module: ic_is_vpc
 short_description: Create or delete VPC (Virtual Private Cloud)
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete VPC on IBM Cloud.
+    - Create or delete VPC (Virtual Private Cloud) on IBM Cloud.
 requirements:
     - "python >= 3.6"
     - "ibmcloud-python-sdk"
@@ -57,18 +57,18 @@ extends_documentation_fragment:
 
 EXAMPLES = '''
 # Create VPC
-- ic_vpc:
+- ic_is_vpc:
     vpc: ibmcloud-baby
     resouge_group: advisory
 
 # Create VPC without address prefix
-- ic_vpc:
+- ic_is_vpc:
     vpc: ibmcloud-baby
     resouge_group: advisory
     address_prefix_management: true
 
 # Delete VPC
-- ic_vpc:
+- ic_is_vpc:
     vpc: ibmcloud-baby
     resouge_group: advisory
     state: absent

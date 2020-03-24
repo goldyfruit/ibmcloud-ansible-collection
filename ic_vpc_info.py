@@ -10,12 +10,12 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_vpc_info
+module: ic_is_vpc_info
 short_description: Retrieve information about VPC (Virtual Private Cloud)
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VPC from IBM Cloud.
+    - Retrieve information about VPC (Virtual Private Cloud) from IBM Cloud.
 notes:
     - The result contains a list of VPC.
 requirements:
@@ -31,11 +31,11 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve all VPC list
-- ic_vpc_info:
+# Retrieve VPC list
+- ic_is_vpc_info:
 
-# Retrieve all VPC list and register the value
-- ic_vpc_info:
+# Retrieve VPC list and register the value
+- ic_is_vpc_info:
   register: vpcs
 
 # Display vpcs registered value
@@ -43,8 +43,8 @@ EXAMPLES = '''
     var: vpcs
 
 # Retrieve a specific VPC by ID or by name
-- ic_vpc_info:
-    vpc: r006-ea930372-2abd-4aa1-bf8c-3db3ac8cb765
+- ic_is_vpc_info:
+    vpc: ibmcloud-vpc-baby
 '''
 
 
