@@ -68,11 +68,9 @@ def run_module():
     instance = ic.Instance()
 
     if module.params['instance']:
-        result = instance.get_instance_by_name(module.params['instance'])
+        result = instance.get_instance(module.params['instance'])
         if "errors" in result:
-            result = instance.get_instance_by_id(module.params['instance'])
-            if "errors" in result:
-                module.fail_json(msg="instance not found")
+            module.fail_json(msg=result["errors"])
     else:
         result = instance.get_instances()
         if "errors" in result:

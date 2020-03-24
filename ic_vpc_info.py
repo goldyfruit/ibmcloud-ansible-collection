@@ -63,11 +63,9 @@ def run_module():
     vpc = ic.Vpc()
 
     if module.params['vpc']:
-        result = vpc.get_vpc_by_name(module.params['vpc'])
+        result = vpc.get_vpc(module.params['vpc'])
         if "errors" in result:
-            result = vpc.get_vpc_by_id(module.params['vpc'])
-            if "errors" in result:
-                module.fail_json(msg="vpc not found")
+            module.fail_json(msg=result["errors"])
     else:
         result = vpc.get_vpcs()
         if "errors" in result:

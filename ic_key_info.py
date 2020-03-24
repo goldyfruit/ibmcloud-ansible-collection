@@ -68,11 +68,9 @@ def run_module():
     key = ic.Key()
 
     if module.params['key']:
-        result = key.get_key_by_name(module.params['key'])
+        result = key.get_key(module.params['key'])
         if "errors" in result:
-            result = key.get_key_by_id(module.params['key'])
-            if "errors" in result:
-                module.fail_json(msg="key not found")
+            module.fail_json(msg=result["errors"])
     else:
         result = key.get_keys()
         if "errors" in result:

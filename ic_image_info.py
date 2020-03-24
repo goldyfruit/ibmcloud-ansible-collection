@@ -68,11 +68,9 @@ def run_module():
     image = ic.Image()
 
     if module.params['image']:
-        result = image.get_image_by_name(module.params['image'])
+        result = image.get_image(module.params['image'])
         if "errors" in result:
-            result = image.get_image_by_id(module.params['image'])
-            if "errors" in result:
-                module.fail_json(msg="image not found")
+            module.fail_json(msg=result["errors"])
     else:
         result = image.get_images()
         if "errors" in result:

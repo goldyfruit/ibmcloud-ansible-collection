@@ -71,7 +71,7 @@ def run_module():
         result = instance.get_instance_profile_by_name(
             module.params['profile'])
         if "errors" in result:
-            module.fail_json(msg="instance profile not found")
+            module.fail_json(msg=result["errors"])
     else:
         result = instance.get_instance_profiles()
         if "errors" in result:
