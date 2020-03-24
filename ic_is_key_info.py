@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import key as ic
+from ibmcloud_python_sdk.vpc import key as sdk
 
 
 ANSIBLE_METADATA = {
@@ -65,7 +65,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    key = ic.Key()
+    key = sdk.Key()
 
     if module.params['key']:
         result = key.get_key(module.params['key'])

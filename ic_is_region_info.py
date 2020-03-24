@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import image as sdk
+from ibmcloud_python_sdk import geo as sdk
 
 
 ANSIBLE_METADATA = {
@@ -15,47 +15,47 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_is_image_info
-short_description: Retrieve information about one or more images.
-author: James Regis
+module: ic_is_region_info
+short_description: Retrieve information about one or more regions.
+author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about images from IBM Cloud.
+    - Retrieve information about regions from IBM Cloud.
 notes:
-    - The result contains a list of images.
+    - The result contains a list of regions.
 requirements:
     - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
-    image:
+    region:
         description:
-            - Restrict results to image with UUID or name matching.
+            - Restrict results to region with name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
 '''
 
 EXAMPLES = '''
-# Retrieve image list
-- ic_is_image_info:
+# Retrieve region list
+- ic_is_region_info:
 
-# Retrieve image list and register the value
-- ic_is_image_info:
-  register: images
+# Retrieve region list and register the value
+- ic_is_region_info:
+  register: regions
 
-# Display images registered value
+# Display regions registered value
 - debug:
-    var: images
+    var: regions
 
-# Retrieve a specific image by ID or by name
-- ic_is_image_info:
-    image: ibm-redhat-7-6-minimal-amd64-1
+# Retrieve a specific region by name
+- ic_is_region_info:
+    region: us-south
 '''
 
 
 def run_module():
     module_args = dict(
-        image=dict(
+        region=dict(
             type='str',
             required=False),
     )
@@ -65,14 +65,14 @@ def run_module():
         supports_check_mode=False
     )
 
-    image = sdk.Image()
+    region = sdk.Geo()
 
-    if module.params['image']:
-        result = image.get_image(module.params['image'])
+    if module.params['region']:
+        result = region.get_region(module.params['region'])
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = image.get_images()
+        result = region.get_regions()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 

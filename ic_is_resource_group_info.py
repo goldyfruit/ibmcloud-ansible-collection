@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource as ic
+from ibmcloud_python_sdk.vpc import resource as sdk
 
 
 ANSIBLE_METADATA = {
@@ -65,7 +65,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    resource = ic.Resource()
+    resource = sdk.Resource()
 
     if module.params['account']:
         result = resource.get_resource_groups_by_account(

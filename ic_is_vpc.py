@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+
+from ansible.module_utils.basic import AnsibleModule
+from ibmcloud_python_sdk.vpc import vpc as sdk
 
 
 ANSIBLE_METADATA = {
@@ -105,7 +108,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    vpc = ic.Vpc()
+    vpc = sdk.Vpc()
 
     if module.params["state"] == "absent":
         result = vpc.delete_vpc_by_name(module.params['vpc'])

@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import instance as ic
+from ibmcloud_python_sdk.vpc import instance as sdk
 
 
 ANSIBLE_METADATA = {
@@ -65,7 +65,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = ic.Instance()
+    instance = sdk.Instance()
 
     if module.params['instance']:
         result = instance.get_instance(module.params['instance'])
