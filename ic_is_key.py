@@ -104,7 +104,7 @@ def run_module():
     key = ic.Key()
 
     if module.params["state"] == "absent":
-        result = key.delete_key_by_name(module.params['key'])
+        result = key.delete_key(module.params['key'])
 
         if "errors" in result:
             for key in result["errors"]:
