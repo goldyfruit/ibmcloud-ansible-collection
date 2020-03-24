@@ -162,7 +162,7 @@ def run_module():
     zone = module.params['zone']
 
     if module.params["state"] == "absent":
-        result = instance.delete_instance_by_name(name)
+        result = instance.delete_instance(name)
 
         if "errors" in result:
             for key in result["errors"]:
