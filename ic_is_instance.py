@@ -170,7 +170,7 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        f"instance {name} already absent"))
+                        f"instance {name} doesn't exist"))
 
         module.exit_json(changed=True, msg=(
             f"instance {name} successfully deleted"))
@@ -191,11 +191,13 @@ def run_module():
                 if key["code"] != "validation_unique_failed":
                     module.fail_json(msg=result["errors"])
                 else:
-                    module.exit_json(changed=False, msg=(
-                        f"instance {name} already exists"))
+                    exist = instance.get_instance_by_name(name)
+                    if "errors" in exist:
+                        module.fail_json(msg=exist["errors"])
+                    else:
+                        module.exit_json(changed=False, msg=(exist))
 
-        module.exit_json(changed=True, msg=(
-            f"instance {name} successfully created"))
+        module.exit_json(changed=True, msg=(result))
 
 
 def main():
