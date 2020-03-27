@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import instance as sdk
+from ibmcloud_python_sdk.vpc import instance as sdk
 
 
 ANSIBLE_METADATA = {
@@ -16,15 +16,15 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_is_profile_info
-short_description: Retrieve information about instance profile
+short_description: Retrieve information about VSI profiles.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about instance profile(s) from IBM Cloud.
+    - Retrieve information about VSI (Virtual Server Instance) profile from
+       IBM Cloud.
 notes:
     - The result contains a list of instance profiles.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     profile:
@@ -36,7 +36,7 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve instance profiles list
+# Retrieve instance profile list
 - ic_is_profile_info:
 
 # Retrieve instance profiles and register the value
@@ -47,7 +47,7 @@ EXAMPLES = '''
 - debug:
     var: profiles
 
-# Retrieve a specific instance profile by name
+# Retrieve a specific instance profile
 - ic_is_profile_info:
     profile: cx2-4x8
 '''
@@ -67,9 +67,10 @@ def run_module():
 
     instance = sdk.Instance()
 
-    if module.params['profile']:
-        result = instance.get_instance_profile_by_name(
-            module.params['profile'])
+    name = module.params['profile']
+
+    if name:
+        result = instance.get_instance_profile(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:

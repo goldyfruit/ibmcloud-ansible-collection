@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import key as sdk
+from ibmcloud_python_sdk.vpc import key as sdk_key
 
 
 ANSIBLE_METADATA = {
@@ -16,15 +16,14 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_is_key_info
-short_description: Retrieve information about keys
+short_description: Retrieve information about SSH keys
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about keys from IBM Cloud.
+    - Retrieve information about SSH keys from IBM Cloud.
 notes:
-    - The result contains a list of keys.
+    - The result contains a list of SSH keys.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     key:
@@ -65,10 +64,12 @@ def run_module():
         supports_check_mode=False
     )
 
-    key = sdk.Key()
+    key = sdk_key.Key()
 
-    if module.params['key']:
-        result = key.get_key(module.params['key'])
+    name = module.params['key']
+
+    if name:
+        result = key.get_key(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+
+
+from ansible.module_utils.basic import AnsibleModule
+from ibmcloud_python_sdk.vpc import subnet as sdk
 
 
 ANSIBLE_METADATA = {
@@ -11,46 +15,46 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_is_vpc_info
-short_description: Retrieve information about VPCs (Virtual Private Cloud).
+module: ic_is_subnet_info
+short_description: Retrieve information about subnets.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VPC (Virtual Private Cloud) from IBM Cloud.
+    - Retrieve information about subnet from IBM Cloud.
 notes:
-    - The result contains a list of VPCs.
+    - The result contains a list of subnets.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    vpc:
+    subnet:
         description:
-            - Restrict results to vpc with UUID or name matching.
+            - Restrict results to subnet with UUID or name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
 '''
 
 EXAMPLES = '''
-# Retrieve VPC list
-- ic_is_vpc_info:
+# Retrieve subnet list
+- ic_is_subnet_info:
 
-# Retrieve VPC list and register the value
-- ic_is_vpc_info:
-  register: vpcs
+# Retrieve subnet list and register the value
+- ic_is_subnet_info:
+  register: subnets
 
-# Display vpcs registered value
+# Display subnets registered value
 - debug:
-    var: vpcs
+    var: subnets
 
-# Retrieve a specific VPC by ID or by name
-- ic_is_vpc_info:
-    vpc: ibmcloud-vpc-baby
+# Retrieve a specific subnet by ID or by name
+- ic_is_subnet_info:
+    subnet: ibmcloud-subnet-baby
 '''
 
 
 def run_module():
     module_args = dict(
-        vpc=dict(
+        subnet=dict(
             type='str',
             required=False),
     )
@@ -60,16 +64,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    vpc = sdk_vpc.Vpc()
+    subnet = sdk.Subnet()
 
-    name = module.params['vpc']
+    name = module.params['subnet']
 
     if name:
-        result = vpc.get_vpc(name)
+        result = subnet.get_subnet(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = vpc.get_vpcs()
+        result = subnet.get_subnets()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 

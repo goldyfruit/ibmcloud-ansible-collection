@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import geo as sdk
+from ibmcloud_python_sdk.vpc import geo as sdk_geo
 
 
 ANSIBLE_METADATA = {
@@ -16,15 +16,14 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_is_zone_info
-short_description: Retrieve information about one or more zones per region.
+short_description: Retrieve information about zones per region.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about zones from IBM Cloud.
+    - Retrieve information about zones available per region on IBM Cloud.
 notes:
     - The result contains a list of zones.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     region:
@@ -71,15 +70,17 @@ def run_module():
         supports_check_mode=False
     )
 
-    zone = sdk.Geo()
+    geo = sdk_geo.Geo()
 
-    if module.params['zone']:
-        result = zone.get_region_zone(module.params['region'],
-                                      module.params['zone'])
+    region = module.params['region']
+    zone = module.params['zone']
+
+    if zone:
+        result = geo.get_region_zone(region, zone)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = zone.get_region_zones(module.params['region'])
+        result = geo.get_region_zones(region)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 

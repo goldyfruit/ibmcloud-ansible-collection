@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import key as sdk
+from ibmcloud_python_sdk.vpc import key as sdk
 
 
 ANSIBLE_METADATA = {
@@ -21,7 +21,6 @@ version_added: "2.9"
 description:
     - Create or delete a SSH key on IBM Cloud.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     key:
@@ -83,7 +82,7 @@ def run_module():
             required=False),
         public_key=dict(
             type='str',
-            required=True),
+            required=False),
         type=dict(
             type='str',
             default='rsa',
@@ -103,8 +102,14 @@ def run_module():
 
     key = sdk.Key()
 
-    if module.params["state"] == "absent":
-        result = key.delete_key(module.params['key'])
+    name = module.params['key']
+    resource_group = module.params["resource_group"]
+    public_key = module.params["public_key"]
+    key_type = module.params["type"]
+    state = module.params["state"]
+
+    if state == "absent":
+        result = key.delete_key(name)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -112,30 +117,27 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        f"key {module.params['key']} doesn't exist"))
+                        "key {} doesn't exist").format(name))
 
         module.exit_json(changed=True, msg=(
-            f"key {module.params['key']} successfully deleted"))
+            "key {} successfully deleted")).format(name)
 
     else:
-        result = key.create_key(name=module.params['key'],
-                                resource_group=module.params["resource_group"],
-                                public_key=module.params["public_key"],
-                                type=module.params["type"])
+        result = key.create_key(name=name, resource_group=resource_group,
+                                public_key=public_key, type=key_type)
 
         if "errors" in result:
             for key_name in result["errors"]:
                 if key_name["code"] != "conflict_field":
                     module.fail_json(msg=result["errors"])
                 else:
-                    exist = key.get_key_by_name(module.params['key'])
+                    exist = key.get_key(name)
                     if "errors" in exist:
                         module.fail_json(msg=exist["errors"])
                     else:
                         module.exit_json(changed=False, msg=(exist))
 
-        module.exit_json(changed=True, msg=(
-            f"key {module.params['key']} successfully created"))
+        module.exit_json(changed=True, msg=(result))
 
 
 def main():

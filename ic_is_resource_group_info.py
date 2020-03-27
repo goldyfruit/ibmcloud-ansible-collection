@@ -4,7 +4,7 @@
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import resource as sdk
+from ibmcloud_python_sdk import resource_group as sdk
 
 
 ANSIBLE_METADATA = {
@@ -24,9 +24,12 @@ description:
 notes:
     - The result contains a list of resource groups.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
+    group:
+        description:
+            - Restrict results to group with name matching.
+        required: false
     account:
         description:
             - Restrict results to resource groups for a specific account.
@@ -47,6 +50,10 @@ EXAMPLES = '''
 - debug:
     var: resource_groups
 
+# Retrieve a specific resource group by name
+- ic_is_resource_group_info:
+    region: us-south
+
 # Retrieve resource groups for a specific account
 - ic_is_resource_group_info:
     account: a3d7b8d01e261c24677937c29ab33f3c
@@ -55,6 +62,9 @@ EXAMPLES = '''
 
 def run_module():
     module_args = dict(
+        group=dict(
+            type='str',
+            required=False),
         account=dict(
             type='str',
             required=False),
@@ -67,9 +77,15 @@ def run_module():
 
     resource = sdk.Resource()
 
-    if module.params['account']:
-        result = resource.get_resource_groups_by_account(
-            module.params['account'])
+    group = module.params['group']
+    account = module.params['account']
+
+    if group:
+        result = resource.get_resource_group(group)
+        if "errors" in result:
+            module.fail_json(msg=result["errors"])
+    elif account:
+        result = resource.get_resource_groups_by_account(account)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:

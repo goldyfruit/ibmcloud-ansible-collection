@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import vpc as sdk
+from ibmcloud_python_sdk.vpc import volume as sdk
 
 
 ANSIBLE_METADATA = {
@@ -14,39 +14,41 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_is_vpc
-short_description: Create or delete VPC (Virtual Private Cloud).
+module: ic_is_volume
+short_description: Create or delete volume.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete VPC (Virtual Private Cloud) on IBM Cloud.
+    - Create or delete volume on IBM Cloud.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    vpc:
+    volume:
         description:
-            -  Name that has to be given to the VPC to create or delete.
+            -  Name that has to be given to the volume to create or delete.
                 During the removal an UUID could be used.
         required: true
     resource_group:
         description:
-            -  Name or UUID of the resource group where the VPC has to
+            -  Name or UUID of the resource group where the volume has to
                be created.
         required: false
-    address_prefix_management:
+    iops:
         description:
-            -  Indicates whether a default address prefix should be
-               automatically created for each zone in this VPC.
-        required: false
-        choices: [auto, manual]
-        default: auto
-    classic_access:
+            -  The bandwidth for the volume.
+        required: true
+    capacity:
         description:
-            -  Indicates whether this VPC should be connected to Classic
-               Infrastructure.
-        required: false
-        choices: [true, false]
-        default: false
+            -  The capacity of the volume in gigabytes.
+        required: true
+    profile:
+        description:
+            -  The profile to use for this volume.
+        required: true
+    zone:
+        description:
+            -  The location of the volume.
+        required: true
     state:
         description:
             - Should the resource be present or absent.
@@ -58,42 +60,44 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Create VPC
-- ic_is_vpc:
-    vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+# Create volume
+- ic_is_volume:
+    volume: ibmcloud-baby
+    resouge_group: advisory
 
 # Create VPC without address prefix
-- ic_is_vpc:
-    vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+- ic_is_volume:
+    vpc: ibmcloud-baby
+    resouge_group: advisory
     address_prefix_management: true
 
-# Delete VPC
-- ic_is_vpc:
-    vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+# Delete volume
+- ic_is_volume:
+    volume: ibmcloud-volume-baby
+    resouge_group: advisory
     state: absent
 '''
 
 
 def run_module():
     module_args = dict(
-        vpc=dict(
+        volume=dict(
             type='str',
             required=True),
         resource_group=dict(
             type='str',
             required=False),
-        address_prefix_management=dict(
-            type='str',
-            default='auto',
-            choices=['auto', 'manual'],
+        iops=dict(
+            type='int',
             required=False),
-        classic_access=dict(
-            type='bool',
-            default='false',
-            choices=[True, False],
+        capacity=dict(
+            type='int',
+            required=False),
+        profile=dict(
+            type='str',
+            required=False),
+        zone=dict(
+            type='str',
             required=False),
         state=dict(
             type='str',
@@ -107,16 +111,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    vpc = sdk.Vpc()
+    volume = sdk.Volume()
 
-    name = module.params['vpc']
+    name = module.params["volume"]
     resource_group = module.params["resource_group"]
-    address_prefix_mgmt = module.params['address_prefix_management']
-    classic_access = module.params['classic_access']
-    state = module.params['state']
+    iops = module.params["iops"]
+    capacity = module.params["capacity"]
+    profile = module.params["profile"]
+    zone = module.params["zone"]
+    state = module.params["state"]
 
     if state == "absent":
-        result = vpc.delete_vpc(name)
+        result = volume.delete_volume(name)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -124,23 +130,25 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        "vpc {} doesn't exist")).format(name)
+                        "volume {} doesn't exist")).format(name)
 
         module.exit_json(changed=True, msg=(
             "vpc {} successfully deleted")).format(name)
 
     else:
-        result = vpc.create_vpc(name=name,
-                                resource_group=resource_group,
-                                address_prefix_management=address_prefix_mgmt,
-                                classic_access=classic_access)
+        result = volume.create_volume(name=name,
+                                      resource_group=resource_group,
+                                      iops=iops,
+                                      capacity=capacity,
+                                      profile=profile,
+                                      zone=zone)
 
         if "errors" in result:
             for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
+                if key["code"] != "volume_name_duplicate":
                     module.fail_json(msg=result["errors"])
                 else:
-                    exist = vpc.get_vpc(name)
+                    exist = volume.get_volume(name)
                     if "errors" in exist:
                         module.fail_json(msg=exist["errors"])
                     else:

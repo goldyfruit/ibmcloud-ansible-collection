@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import image as sdk_image
+from ibmcloud_python_sdk.vpc import volume as sdk
 
 
 ANSIBLE_METADATA = {
@@ -15,47 +15,46 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_is_image_info
-short_description: Retrieve information VSI (Virtual Server Instance) images.
-author: James Regis
+module: ic_is_volume_profile_info
+short_description: Retrieve information about volume profiles.
+author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VSI (Virtual Server Instance) images from
-      IBM Cloud.
+    - Retrieve information about volume profile from IBM Cloud.
 notes:
-    - The result contains a list of images.
+    - The result contains a list of volume profiles.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    image:
+    profile:
         description:
-            - Restrict results to image with UUID or name matching.
+            - Restrict results to volume profile with name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
 '''
 
 EXAMPLES = '''
-# Retrieve image list
-- ic_is_image_info:
+# Retrieve volume profile list
+- ic_is_volume_profile_info:
 
-# Retrieve image list and register the value
-- ic_is_image_info:
-  register: images
+# Retrieve volume profile list and register the value
+- ic_is_volume_proile_info:
+  register: profiles
 
-# Display images registered value
+# Display profiles registered value
 - debug:
-    var: images
+    var: profiles
 
-# Retrieve a specific image by ID or by name
-- ic_is_image_info:
-    image: ibm-redhat-7-6-minimal-amd64-1
+# Retrieve a specific volume profile
+- ic_is_volume_profile_info:
+    profile: ibmcloud-profile-baby
 '''
 
 
 def run_module():
     module_args = dict(
-        image=dict(
+        profile=dict(
             type='str',
             required=False),
     )
@@ -65,16 +64,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    image = sdk_image.Image()
+    volume = sdk.Volume()
 
-    name = module.params['image']
+    name = module.params['profile']
 
     if name:
-        result = image.get_image(name)
+        result = volume.get_volume_profile(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = image.get_images()
+        result = volume.get_volume_profiles()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 

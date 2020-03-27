@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+
+
+from ansible.module_utils.basic import AnsibleModule
+from ibmcloud_python_sdk.vpc import volume as sdk
 
 
 ANSIBLE_METADATA = {
@@ -11,46 +15,46 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_is_vpc_info
-short_description: Retrieve information about VPCs (Virtual Private Cloud).
+module: ic_is_volume_info
+short_description: Retrieve information about volumes.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VPC (Virtual Private Cloud) from IBM Cloud.
+    - Retrieve information about volume from IBM Cloud.
 notes:
-    - The result contains a list of VPCs.
+    - The result contains a list of volumes.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    vpc:
+    volume:
         description:
-            - Restrict results to vpc with UUID or name matching.
+            - Restrict results to volume with UUID or name matching.
         required: false
 extends_documentation_fragment:
     - ibmcloud
 '''
 
 EXAMPLES = '''
-# Retrieve VPC list
-- ic_is_vpc_info:
+# Retrieve volume list
+- ic_is_volume_info:
 
-# Retrieve VPC list and register the value
-- ic_is_vpc_info:
-  register: vpcs
+# Retrieve volume list and register the value
+- ic_is_volume_info:
+  register: volumes
 
-# Display vpcs registered value
+# Display volumes registered value
 - debug:
-    var: vpcs
+    var: volumes
 
-# Retrieve a specific VPC by ID or by name
-- ic_is_vpc_info:
-    vpc: ibmcloud-vpc-baby
+# Retrieve a specific volume by ID or by name
+- ic_is_volume_info:
+    volume: ibmcloud-volume-baby
 '''
 
 
 def run_module():
     module_args = dict(
-        vpc=dict(
+        volume=dict(
             type='str',
             required=False),
     )
@@ -60,16 +64,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    vpc = sdk_vpc.Vpc()
+    volume = sdk.Volume()
 
-    name = module.params['vpc']
+    name = module.params['volume']
 
     if name:
-        result = vpc.get_vpc(name)
+        result = volume.get_volume(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = vpc.get_vpcs()
+        result = volume.get_volumes()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 

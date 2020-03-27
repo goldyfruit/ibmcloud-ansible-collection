@@ -4,7 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import instance as sdk
+from ibmcloud_python_sdk.vpc import instance as sdk_instance
 
 
 ANSIBLE_METADATA = {
@@ -16,15 +16,14 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_is_instance_info
-short_description: Retrieve information about one or more instances.
+short_description: Retrieve information about VSI (Virtual Server Instance).
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about instance(s) from IBM Cloud.
+    - Retrieve information about VSI (Virtual Server Instance) from IBM Cloud.
 notes:
     - The result contains a list of instances.
 requirements:
-    - "python >= 3.6"
     - "ibmcloud-python-sdk"
 options:
     instance:
@@ -65,10 +64,12 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    instance = sdk_instance.Instance()
 
-    if module.params['instance']:
-        result = instance.get_instance(module.params['instance'])
+    name = module.params['instance']
+
+    if name:
+        result = instance.get_instance(name)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:

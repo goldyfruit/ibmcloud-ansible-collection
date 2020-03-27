@@ -15,7 +15,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_is_instance
-short_description: Create or delete VSI (Virtual Server Instance)
+short_description: Create or delete VSI (Virtual Server Instance).
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -150,7 +150,6 @@ def run_module():
 
     instance = ic.Instance()
 
-    # flake8 trick to avoid complaint about line length
     name = module.params['instance']
     keys = module.params['keys']
     profile = module.params['profile']
