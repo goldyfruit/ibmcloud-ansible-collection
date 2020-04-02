@@ -133,7 +133,7 @@ def run_module():
                         "volume {} doesn't exist")).format(name)
 
         module.exit_json(changed=True, msg=(
-            "vpc {} successfully deleted")).format(name)
+            "volume {} successfully deleted")).format(name)
 
     else:
         result = volume.create_volume(name=name,
