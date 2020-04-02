@@ -38,7 +38,7 @@ options:
             -  A unique public SSH key to import, encoded in PEM format.
                 The key (prior to encoding) must be either 2048 or 4096
                 bits long.
-        required: true
+        required: false
     type:
         description:
             -  Indicates whether this VPC should be connected to Classic
