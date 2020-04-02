@@ -62,12 +62,12 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Create volume
 - ic_is_volume:
-    volume: ibmcloud-baby
+    volume: ibmcloud-volume-baby
     resouge_group: advisory
 
-# Create VPC without address prefix
+# Create volume without address prefix
 - ic_is_volume:
-    vpc: ibmcloud-baby
+    volume: ibmcloud-volume-baby
     resouge_group: advisory
     address_prefix_management: true
 
