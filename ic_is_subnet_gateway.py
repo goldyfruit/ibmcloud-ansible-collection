@@ -34,9 +34,9 @@ options:
         required: false
     state:
         description:
-            - Should the resource be present or absent.
+            - Should the resource be present, absent, attach or detach.
         required: false
-        choices: [present, absent]
+        choices: [present, absent, attach, detach]
         default: present
 extends_documentation_fragment:
     - ibmcloud

@@ -30,7 +30,7 @@ options:
         required: true
     resource_group:
         description:
-            -  Name or UUID of the resource group where the volume has to
+            -  Name or UUID of the resource group where the subnet has to
                be created.
         required: false
     ip_version:

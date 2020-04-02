@@ -31,8 +31,8 @@ options:
         required: true
     resource_group:
         description:
-            -  Name or UUID of the resource group where the volume has to
-               be created.
+            -  Name or UUID of the resource group where the public gateway has
+                 to be created.
         required: false
     floatin_ip:
         description:
