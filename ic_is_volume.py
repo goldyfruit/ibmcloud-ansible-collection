@@ -36,19 +36,19 @@ options:
     iops:
         description:
             -  The bandwidth for the volume.
-        required: true
+        required: false
     capacity:
         description:
             -  The capacity of the volume in gigabytes.
-        required: true
+        required: false
     profile:
         description:
             -  The profile to use for this volume.
-        required: true
+        required: false
     zone:
         description:
             -  The location of the volume.
-        required: true
+        required: false
     state:
         description:
             - Should the resource be present or absent.
