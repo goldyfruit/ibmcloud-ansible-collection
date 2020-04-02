@@ -20,7 +20,7 @@ short_description: Retrieve information about subnets.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about subnet from IBM Cloud.
+    - Retrieve information about subnets from IBM Cloud.
 notes:
     - The result contains a list of subnets.
 requirements:
