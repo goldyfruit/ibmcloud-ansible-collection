@@ -136,8 +136,6 @@ def run_module():
             zone=zone,
             vpc=vpc)
 
-        module.fail_json(msg=result)
-
         if "errors" in result:
             for key in result["errors"]:
                 if key["code"] != "validation_unique_failed":
