@@ -61,13 +61,13 @@ EXAMPLES = '''
 - ic_is_key:
     name: ibmcloud-key-user1
     public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChXZYzE545Uc5PU...
-    resouge_group: advisory
+    resource_group: advisory
     type: rsa
 
 # Delete SSH key
 - ic_is_key:
     vpc: ibmcloud-key-user1
-    resouge_group: advisory
+    resource_group: advisory
     state: absent
 '''
 
