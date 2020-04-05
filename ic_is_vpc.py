@@ -61,18 +61,18 @@ EXAMPLES = '''
 # Create VPC
 - ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+    resource_group: ibmcloud-rg-baby
 
 # Create VPC without address prefix
 - ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+    resource_group: ibmcloud-rg-baby
     address_prefix_management: true
 
 # Delete VPC
 - ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resouge_group: ibmcloud-rg-baby
+    resource_group: ibmcloud-rg-baby
     state: absent
 '''
 
