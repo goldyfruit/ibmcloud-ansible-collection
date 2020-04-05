@@ -63,18 +63,18 @@ EXAMPLES = '''
 # Create volume
 - ic_is_volume:
     volume: ibmcloud-volume-baby
-    resouge_group: advisory
+    resource_group: advisory
 
 # Create volume without address prefix
 - ic_is_volume:
     volume: ibmcloud-volume-baby
-    resouge_group: advisory
+    resource_group: advisory
     address_prefix_management: true
 
 # Delete volume
 - ic_is_volume:
     volume: ibmcloud-volume-baby
-    resouge_group: advisory
+    resource_group: advisory
     state: absent
 '''
 
