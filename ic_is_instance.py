@@ -94,7 +94,7 @@ EXAMPLES = '''
     keys:
       - ibmcloud-ssh-key
     profile: mp2-56x448
-    resouge_group: advisory
+    resource_group: advisory
     vpc: advisory
     image: ibm-redhat-7-6-minimal-amd64-1
     pni_subnet: advisory-subnet
