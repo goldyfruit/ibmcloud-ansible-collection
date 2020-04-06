@@ -34,7 +34,7 @@ options:
             -  Name or UUID of the resource group where the public gateway has
                  to be created.
         required: false
-    floatin_ip:
+    floating_ip:
         description:
             -  Identifies a floating IP by a unique property.
         required: false
@@ -78,7 +78,7 @@ def run_module():
         resource_group=dict(
             type='str',
             required=False),
-        floatin_ip=dict(
+        floating_ip=dict(
             type='str',
             required=False),
         zone=dict(
@@ -103,7 +103,7 @@ def run_module():
 
     name = module.params["gateway"]
     resource_group = module.params["resource_group"]
-    floatin_ip = module.params["floatin_ip"]
+    floating_ip = module.params["floating_ip"]
     zone = module.params["zone"]
     vpc = module.params["vpc"]
     state = module.params["state"]
@@ -132,7 +132,7 @@ def run_module():
         result = gateway.create_public_gateway(
             name=name,
             resource_group=resource_group,
-            floatin_ip=floatin_ip,
+            floating_ip=floating_ip,
             zone=zone,
             vpc=vpc)
 
