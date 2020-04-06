@@ -4,8 +4,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import instance as sdk_instance
-
+from ibmcloud_python_sdk.vpc import instance as sdk
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -35,10 +34,10 @@ extends_documentation_fragment:
 '''
 
 EXAMPLES = '''
-# Retrieve all instances list
+# Retrieve instance list
 - ic_is_instance_info:
 
-# Retrieve all instance list and register the value
+# Retrieve instance list and register the value
 - ic_is_instance_info:
   register: instances
 
@@ -46,9 +45,9 @@ EXAMPLES = '''
 - debug:
     var: instances
 
-# Retrieve a specific instance by ID
+# Retrieve a specific instance
 - ic_is_instance_info:
-    instance: ibmcloud-vsi-ansible
+    instance: ibmcloud-vsi-baby
 '''
 
 
@@ -64,7 +63,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk_instance.Instance()
+    instance = sdk.Instance()
 
     name = module.params['instance']
 
