@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright: (c) 2020, IBM Corp.
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
