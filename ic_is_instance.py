@@ -3,7 +3,7 @@
 # GNU General Public License v3.0+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import instance as ic
+from ibmcloud_python_sdk.vpc import instance as sdk
 
 
 ANSIBLE_METADATA = {
@@ -115,13 +115,90 @@ def run_module():
         keys=dict(
             type='list',
             required=False),
+        network_interfaces=dict(
+            type='list',
+            options=dict(
+                allow_ip_spoofing=dict(
+                    type='bool',
+                    required=False,
+                    choices=[True, False]),
+                ips=dict(
+                    type='list',
+                    required=False),
+                name=dict(
+                    type='str',
+                    required=False),
+                primary_ip=dict(
+                    type='list',
+                    required=False),
+                security_groups=dict(
+                    type='list',
+                    required=False),
+                subnet=dict(
+                    type='str',
+                    required=True),
+            ),
+            required=False),
+        placement_target=dict(
+            type='str',
+            required=False),
         profile=dict(
             type='str',
-            required=True),
+            required=False),
         resource_group=dict(
             type='str',
             required=False),
         user_data=dict(
+            type='str',
+            required=False),
+        volume_attachments=dict(
+            type='list',
+            options=dict(
+                delete_volume_on_instance_delete=dict(
+                    type='bool',
+                    required=False,
+                    choices=[True, False]),
+                name=dict(
+                    type='str',
+                    required=False),
+                volume=dict(
+                    type='str',
+                    required=False),
+            ),
+            required=False),
+        boot_volume_attachment=dict(
+            type='dict',
+            options=dict(
+                delete_volume_on_instance_delete=dict(
+                    type='bool',
+                    required=False,
+                    choices=[True, False]),
+                name=dict(
+                    type='str',
+                    required=False),
+                volume=dict(
+                    type='dict',
+                    options=dict(
+                        capacity=dict(
+                            type='int',
+                            required=False),
+                        encryption_key=dict(
+                            type='str',
+                            required=False),
+                        iops=dict(
+                            type='int',
+                            required=False),
+                        name=dict(
+                            type='str',
+                            required=False),
+                        profile=dict(
+                            type='str',
+                            required=True),
+                    ),
+                    required=False),
+            ),
+            required=False),
+        source_template=dict(
             type='str',
             required=False),
         vpc=dict(
@@ -129,13 +206,30 @@ def run_module():
             required=False),
         image=dict(
             type='str',
-            required=True),
-        pni_subnet=dict(
-            type='str',
-            required=True),
+            required=False),
+        primary_network_interface=dict(
+            type='dict',
+            options=dict(
+                ips=dict(
+                    type='list',
+                    required=False),
+                name=dict(
+                    type='str',
+                    required=False),
+                primary_ip=dict(
+                    type='list',
+                    required=False),
+                security_groups=dict(
+                    type='list',
+                    required=False),
+                subnet=dict(
+                    type='str',
+                    required=True),
+            ),
+            required=False),
         zone=dict(
             type='str',
-            required=True),
+            required=False),
         state=dict(
             type='str',
             default='present',
@@ -148,16 +242,21 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = ic.Instance()
+    instance = sdk.Instance()
 
     name = module.params['instance']
     keys = module.params['keys']
+    network_interfaces = module.params['network_interfaces']
+    placement_target = module.params['placement_target']
+    volume_attachments = module.params['volume_attachments']
+    boot_volume_attachment = module.params['boot_volume_attachment']
+    source_template = module.params['source_template']
     profile = module.params['profile']
     resource_group = module.params["resource_group"]
     user_data = module.params['user_data']
     vpc = module.params['vpc']
     image = module.params['image']
-    pni_subnet = module.params['pni_subnet']
+    primary_network_interface = module.params['primary_network_interface']
     zone = module.params['zone']
 
     if module.params["state"] == "absent":
@@ -169,28 +268,40 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        f"instance {name} doesn't exist"))
+                        "instance {} doesn't exist".format(name)))
 
         module.exit_json(changed=True, msg=(
-            f"instance {name} successfully deleted"))
+            "instance {} successfully deleted".format(name)))
 
     else:
-        result = instance.create_instance(name=name,
-                                          keys=keys,
-                                          profile=profile,
-                                          resource_group=resource_group,
-                                          user_data=user_data,
-                                          vpc=vpc,
-                                          image=image,
-                                          pni_subnet=pni_subnet,
-                                          zone=zone)
+
+        check = instance.get_instance(name)
+        if "id" in check:
+            module.exit_json(changed=False, msg=(check))
+
+        result = instance.create_instance(
+            name=name,
+            keys=keys,
+            profile=profile,
+            network_interfaces=network_interfaces,
+            placement_target=placement_target,
+            volume_attachments=volume_attachments,
+            boot_volume_attachment=boot_volume_attachment,
+            source_template=source_template,
+            resource_group=resource_group,
+            user_data=user_data,
+            vpc=vpc,
+            image=image,
+            primary_network_interface=primary_network_interface,
+            zone=zone
+        )
 
         if "errors" in result:
             for key in result["errors"]:
                 if key["code"] != "validation_unique_failed":
                     module.fail_json(msg=result["errors"])
                 else:
-                    exist = instance.get_instance_by_name(name)
+                    exist = instance.get_instance(name)
                     if "errors" in exist:
                         module.fail_json(msg=exist["errors"])
                     else:
