@@ -26,9 +26,7 @@ requirements:
 options:
     instance:
         description:
-            -  Name that has to be given to the public gateway to create
-                or delete.
-                During the removal an UUID could be used.
+            -  Instance name or ID
         required: true
     floatin_ip:
         description:
@@ -44,21 +42,28 @@ options:
         description:
             - Should the resource be present or absent.
         required: false
-        choices: [present, absent]
+        choices: [present, absent, attach, detach]
         default: present
 extends_documentation_fragment:
     - ibmcloud
 '''
 
 EXAMPLES = '''
-# Attach floating IP
+# Attach floating IP on VSI's primary network interface
 - ic_is_instance_fip:
     instance: ibmcloud-vsi-baby
     floating_ip: ibmcloud-vip-baby
 
-# Delete public gateway
+# Attach floating IP on VSI specific interface
+- ic_is_instance_fip:
+    instance: ibmcloud-vsi-baby
+    floating_ip: ibmcloud-vip-baby
+    interface: ibmclouc-nic-baby
+
+# Detach floating IP from VSI
 - ic_is_instance_fip:
     instance: ibmcloud-instance-baby
+    floating_ip: ibmcloud-vip-baby
     state: absent
 '''
 
@@ -70,7 +75,7 @@ def run_module():
             required=True),
         floating_ip=dict(
             type='str',
-            required=False),
+            required=True),
         interface=dict(
             type='str',
             required=False),
@@ -102,7 +107,7 @@ def run_module():
             name, interface, floating_ip)
 
         if "errors" in result:
-            module.fail_json(msg=result)
+            module.fail_json(msg=result["errors"])
 
         module.exit_json(changed=True, msg=(
             "fip {} successfully disassociated from {}").format(
