@@ -167,7 +167,7 @@ def run_module():
             required=False),
         direction=dict(
             type='str',
-            required=True,
+            required=False,
             choices=['inbound', 'outbound']),
         ip_version=dict(
             type='str',
@@ -175,7 +175,7 @@ def run_module():
             choices=['ipv4']),
         protocol=dict(
             type='str',
-            required=True,
+            required=False,
             choices=['all', 'icmp', 'tcp', 'udp']),
         port_min=dict(
             type='int',
