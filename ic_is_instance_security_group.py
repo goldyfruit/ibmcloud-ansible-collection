@@ -81,17 +81,6 @@ security = sdk_security.Security()
 instance = sdk_instance.Instance()
 
 
-def _get_attachment(name, volume):
-    data = instance.get_instance_volume_attachments(name)
-    if "errors" in data:
-        return data
-
-    for attachment in data["volume_attachments"]:
-        info = attachment["volume"]
-        if info["name"] == volume or info["id"] == volume:
-            return attachment["id"]
-
-
 def run_module():
     module_args = dict(
         instance=dict(
