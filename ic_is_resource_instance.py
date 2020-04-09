@@ -18,25 +18,25 @@ short_description: Create or delete resource instance.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Create or delete instance on IBM Cloud.
+    - Create or delete resource instance on IBM Cloud.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    name:
+    instance:
         description:
-            -  Name that has to be given to the VPC to create or delete.
-                During the removal an UUID could be used.
+            -  Name that has to be given to the resource instance to
+               create or delete. During the removal an UUID could be used.
         required: true
     resource_group:
         description:
             -  Name or UUID of the resource group where the resource
             instance has to be created. If absent, the default resource
             group will be used.
-        required: true
+        required: false
     resource_plan:
         description:
             -  Indicates the plan which will be used to deploy the resource
-            instance. If absent, the DNS resource plan will be used
+               instance. If absent, the DNS resource plan will be used.
         required: false
         choices: [dns]
         default: dns
@@ -58,14 +58,13 @@ extends_documentation_fragment:
 EXAMPLES = '''
 # Create resource instance
 - ic_is_resource_instance:
-    name: ibmcloud-dns-resource-instance
-    resource_group: ibmcloud-rg-baby
+    name: ibmcloud-resource-instance-baby
     resource_plan: dns
     target: bluemix-global
 
 # Delete resource instance
 - ic_is_resource_instance
-    name: ibmcloud-vpc-baby
+    name: ibmcloud-resource-instance-baby
     state: absent
 '''
 
@@ -80,12 +79,11 @@ def run_module():
             required=False),
         resource_plan=dict(
             type='str',
-            default=None,
+            default='dns',
             choices=['dns'],
             required=False),
         target=dict(
             type='str',
-            default=None,
             required=False),
         state=dict(
             type='str',
@@ -102,7 +100,7 @@ def run_module():
     resource_instance = sdk.ResourceInstance()
 
     name = module.params['instance']
-    rg = module.params["resource_group"]
+    resource_group = module.params["resource_group"]
     target = module.params['target']
     resource_plan = module.params['resource_plan']
     state = module.params['state']
@@ -115,27 +113,26 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        "resource instance {} doesn't exist").format(name))
+                        "resource instance {} doesn't exist".format(name)))
 
         module.exit_json(changed=True, msg=(
-            "resource instance {} successfully deleted").format(name))
+            "resource instance {} successfully deleted".format(name)))
     else:
-        existing_resource = resource_instance.get_resource_instance(name)
-        if "errors" in existing_resource:
-            for key in existing_resource["errors"]:
+        check = resource_instance.get_resource_instance(name)
+        if "errors" in check:
+            for key in check["errors"]:
                 if key["code"] == "not_found":
-                    # if the resource instance doesn't exist
                     result = resource_instance.create_resource_instance(
                             name=name,
-                            resource_group=rg,
+                            resource_group=resource_group,
                             target=target,
                             resource_plan=resource_plan)
                     if "errors" in result:
                         module.fail_json(msg=result["errors"])
                     else:
-                        module.exit_json(changed=True, msg=(
-                            "resource instance {} successfully created").format(name))
-        module.exit_json(changed=False, msg=(existing_resource))
+                        module.exit_json(changed=True, msg=result)
+
+        module.exit_json(changed=False, msg=check)
 
 
 def main():
