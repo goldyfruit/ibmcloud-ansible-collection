@@ -134,27 +134,34 @@ def _check_rule(module):
     msg = ("rule already exists in security group {}".format(
         module.params["group"]))
 
+    # "Workaround" for 80 chars Pylint
+    cird_block = module.params["cidr_block"]
+
     for i in data["rules"]:
         if (
             i["direction"] == module.params["direction"]
             and i.get("port_max", "") == module.params["port_max"]
             and i.get("port_min", "") == module.params["port_min"]
             and i.get("protocol", "") == module.params["protocol"]
-            or i["remote"].get("cidr_block", "") == module.params["cidr_block"]
-            or i["remote"].get("address", "") == module.params["address"]
-            or i["remote"].get("id", "") == module.params["security_group"]
         ):
-            module.exit_json(changed=False, msg=msg)
+            if (
+                i["remote"].get("cidr_block", "") == cird_block
+                or i["remote"].get("address", "") == module.params["address"]
+                or i["remote"].get("id", "") == module.params["security_group"]
+            ):
+                module.exit_json(changed=False, msg=msg)
         elif (
             i["direction"] == module.params["direction"]
             and i.get("type", "") == module.params["type"]
             and i.get("protocol", "") == module.params["protocol"]
-            and i.get("code"), "" == module.params["code"]
-            or i["remote"].get("cidr_block", "") == module.params["cidr_block"]
-            or i["remote"].get("address", "") == module.params["address"]
-            or i["remote"].get("id", "") == module.params["security_group"]
+            and i.get("code", "") == module.params["code"]
         ):
-            module.exit_json(changed=False, msg=msg)
+            if (
+                i["remote"].get("cidr_block", "") == cird_block
+                or i["remote"].get("address", "") == module.params["address"]
+                or i["remote"].get("id", "") == module.params["security_group"]
+            ):
+                module.exit_json(changed=False, msg=msg)
 
 
 def run_module():
