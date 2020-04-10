@@ -53,8 +53,6 @@ options:
         required: false
         choices: [present, absent]
         default: present
-extends_documentation_fragment:
-    - ibmcloud
 '''
 
 EXAMPLES = '''
