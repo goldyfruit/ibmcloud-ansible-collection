@@ -42,9 +42,9 @@ options:
         default: dns
     target:
         description:
-            -  Indicates whether this VPC should be connected to Classic
-               Infrastructure. If absent, bluemix-global will be used.
-        required: true
+            -  Indicates where the resource instance should be deployed.
+        default: bluemix-global
+        required: false
     state:
         description:
             - Should the resource be present or absent.
