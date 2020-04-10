@@ -17,7 +17,7 @@ DOCUMENTATION = '''
 ---
 module: ic_is_image_info
 short_description: Retrieve information VSI (Virtual Server Instance) images.
-author: James Regis
+author: James Regis (jregis)
 version_added: "2.9"
 description:
     - Retrieve information about VSI (Virtual Server Instance) images from
