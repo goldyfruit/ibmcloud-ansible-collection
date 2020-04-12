@@ -94,10 +94,11 @@ options:
           - The pool protocol.
         type: str
         required: true
-        choices: [ http, tcp ]
+        choices: [ http, https, tcp ]
       session_persistence:
         description:
           - The session persistence of this pool.
+        type: dict
         suboptions:
           cookie_name:
             description:
@@ -112,6 +113,7 @@ options:
       health_monitor:
         description:
           - The health monitor of this pool.
+        type: dict
         suboptions:
           delay:
             description:
@@ -140,7 +142,7 @@ options:
             - The pool protocol.
           type: str
           required: true
-          choices: [ http, tcp ]
+          choices: [ http, https, tcp ]
     listeners:
       description:
         - The listeners of this load balancer.
@@ -210,7 +212,7 @@ EXAMPLES = r'''
               address: 10.0.12.15
           - port: 80
             target:
-              address: 10.0.12.15
+              address: 10.0.12.16
     listeners:
       - default_pool:
           name: ibmcloud-lb-pool-baby
@@ -250,10 +252,10 @@ def run_module():
                             type='dict',
                             options=dict(
                                 instance=dict(
-                                    type='int',
+                                    type='str',
                                     required=False),
                                 address=dict(
-                                    type='int',
+                                    type='str',
                                     required=False),
                             ),
                             required=True),
@@ -268,7 +270,7 @@ def run_module():
                 protocol=dict(
                     type='str',
                     required=True,
-                    choices=['http', 'tcp']),
+                    choices=['http', 'https', 'tcp']),
                 session_persistence=dict(
                     type='dict',
                     options=dict(
@@ -303,7 +305,7 @@ def run_module():
                         type=dict(
                             type='str',
                             required=True,
-                            choices=['http', 'tcp']),
+                            choices=['http', 'https', 'tcp']),
                     ),
                     required=True),
                 ),
