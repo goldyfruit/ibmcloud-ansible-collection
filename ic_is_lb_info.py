@@ -12,28 +12,26 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_lb_info
-short_description: Retrieve information about load balancer.
+short_description: Retrieve information about load balancers.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about load balancer from IBM Cloud.
+    - Retrieve information about load balancers from IBM Cloud.
 notes:
     - The result contains a list of load balancers.
 requirements:
     - "ibmcloud-python-sdk"
 options:
     lb:
-        description:
-            - Restrict results to load balancer with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+      description:
+        - Restrict results to load balancer with UUID or name matching.
+      required: false
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Retrieve load balancer list
 - ic_is_lb_info:
 
