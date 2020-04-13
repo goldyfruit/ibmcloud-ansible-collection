@@ -34,7 +34,6 @@ options:
       description:
         - Restrict results to pool with UUID or name matching.
       required: false
-
 '''
 
 EXAMPLES = r'''

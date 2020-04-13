@@ -122,12 +122,12 @@ options:
       type: str
       required: true
       choices: [ http, https, tcp ]
-    state:
-      description:
-        - Should the resource be present or absent.
-      type: str
-      choices: [present, absent]
-      default: present
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    choices: [present, absent]
+    default: present
 '''
 
 EXAMPLES = r'''
@@ -165,7 +165,7 @@ EXAMPLES = r'''
       url_path: /
 
 # Delete pool from load balancer
-- ic_is_lb:
+- ic_is_lb_pool:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     state: absent

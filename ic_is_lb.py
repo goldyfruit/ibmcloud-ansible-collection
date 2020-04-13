@@ -172,12 +172,12 @@ options:
                   - The user-defined name for this load balancer pool.
                 type: str
                 required: true
-    state:
-      description:
-        - Should the resource be present or absent.
-      type: str
-      choices: [present, absent]
-      default: present
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    choices: [present, absent]
+    default: present
 '''
 
 EXAMPLES = r'''
