@@ -274,11 +274,11 @@ def run_module():
                 else:
                     module.exit_json(changed=False, msg=(
                         "listener {} doesn't exist in load balancer {}".format(
-                          id, lb)))
+                          listener, lb)))
 
         module.exit_json(changed=True, msg=(
             "listener {} successfully deleted from load balancer {}".format(
-              id, lb)))
+              listener, lb)))
     else:
         listener = id
         if port:
