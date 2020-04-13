@@ -34,6 +34,10 @@ options:
       description:
         - Restrict results to listener with UUID matching.
       required: false
+    port:
+      description:
+        - Restrict results to listener with port matching.
+      required: false
 '''
 
 EXAMPLES = r'''
@@ -54,6 +58,11 @@ EXAMPLES = r'''
 - ic_is_lb_listener_info:
     lb: ibmcloud-lb-baby
     listener: ibmcloud-listener-baby
+
+# Retrieve specific listener from a load balancer by using port
+- ic_is_lb_listener_info:
+    lb: ibmcloud-lb-baby
+    port: 443
 '''
 
 
@@ -65,6 +74,9 @@ def run_module():
         listener=dict(
             type='str',
             required=False),
+        port=dict(
+            type='int',
+            required=False),
     )
 
     module = AnsibleModule(
@@ -75,10 +87,16 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    name = module.params['listener']
+    id = module.params['listener']
+    port = module.params['port']
 
-    if name:
-        result = loadbalancer.get_lb_listener(lb, name)
+    if id:
+        listener = id
+    elif port:
+        listener = int(port)
+
+    if listener:
+        result = loadbalancer.get_lb_listener(lb, listener)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:

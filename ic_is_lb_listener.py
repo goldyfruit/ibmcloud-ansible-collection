@@ -151,10 +151,16 @@ EXAMPLES = r'''
         target:
           id: r006-0c1b2e3f-d38a-4c48-9f08-b4432c9601a6
 
-# Delete pool from load balancer
+# Delete listener from load balancer by using listener ID
 - ic_is_lb_listener:
     lb: ibmcloud-lb-baby
     listener: ibmcloud-lb-pool-baby
+    state: absent
+
+# Delete listener from load balancer by using port number
+- ic_is_lb_listener:
+    lb: ibmcloud-lb-baby
+    port: 443
     state: absent
 '''
 
@@ -256,7 +262,10 @@ def run_module():
     state = module.params["state"]
 
     if state == "absent":
-        result = loadbalancer.delete_listener(lb, id)
+        listener = id
+        if port:
+            listener = int(port)
+        result = loadbalancer.delete_listener(lb, listener)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -271,9 +280,13 @@ def run_module():
             "listener {} successfully deleted from load balancer {}".format(
               id, lb)))
     else:
-        check = loadbalancer.get_lb_listener(lb, id)
-        if "id" in check:
-            module.exit_json(changed=False, msg=(check))
+        listener = id
+        if port:
+            listener = int(port)
+        check = loadbalancer.get_lb_listener(lb, listener)
+
+        if "provisioning_status" in check:
+            module.exit_json(changed=False, msg=check)
 
         result = loadbalancer.create_listener(
             lb=lb,
@@ -286,15 +299,7 @@ def run_module():
         )
 
         if "errors" in result:
-            for key_name in result["errors"]:
-                if key_name["code"] != "listener_duplicate_port":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = loadbalancer.get_lb_listener(lb, port)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=exist)
+            module.fail_json(msg=result["errors"])
 
         module.exit_json(changed=True, msg=(result))
 
