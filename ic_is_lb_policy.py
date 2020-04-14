@@ -127,7 +127,7 @@ EXAMPLES = r'''
 # Delete listener from load balancer by using listener ID
 - ic_is_lb_listener:
     lb: ibmcloud-lb-baby
-    listener: ibmcloud-lb-pool-baby
+    listener: r006-ac61921a-63d3-4af2-9063-2b734a817c95
     state: absent
 
 # Delete listener from load balancer by using port number
