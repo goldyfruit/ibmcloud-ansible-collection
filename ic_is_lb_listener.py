@@ -91,18 +91,18 @@ options:
             description
               - Identifies a load balancer pool by ID property.
             type: str
-            required: true
+            required: false
           http_status_code:
             description
               - The http status code in the redirect response.
             type: int
-            required: true
+            required: false
           choices: [ 301, 302, 303, 307, 308 ]
           url:
             description
               - The redirect target URL.
             type: str
-            required: true
+            required: false
   protocol:
     description:
       - The connection limit of the listener.
