@@ -47,7 +47,6 @@ options:
     description:
       - Rule ID.
     type: str
-    required: false
   condition:
     description:
       - The condition of the rule.
