@@ -148,30 +148,30 @@ options:
         - The listeners of this load balancer.
       type: list
       suboptions:
-          connection_limit:
-            description:
-              - The connection limit of the listener.
-            type: int
-          protocol:
-            description:
-              - The connection limit of the listener.
-            type: str
-            required: true
-            choices: [ http, https, tcp ]
-          port:
-            description:
-              - The listener port number.
-            type: int
-            required: true
-          default_pool:
-            description:
-              - The default pool associated with the listener.
-            suboptions:
-              name:
-                description:
-                  - The user-defined name for this load balancer pool.
-                type: str
-                required: true
+        connection_limit:
+          description:
+            - The connection limit of the listener.
+          type: int
+        protocol:
+          description:
+            - The connection limit of the listener.
+          type: str
+          required: true
+          choices: [ http, https, tcp ]
+        port:
+          description:
+            - The listener port number.
+          type: int
+          required: true
+        default_pool:
+          description:
+            - The default pool associated with the listener.
+          suboptions:
+            name:
+              description:
+                - The user-defined name for this load balancer pool.
+              type: str
+              required: true
   state:
     description:
       - Should the resource be present or absent.
