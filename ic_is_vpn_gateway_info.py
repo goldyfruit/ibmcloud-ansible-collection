@@ -43,7 +43,7 @@ EXAMPLES = r'''
 - debug:
     var: gateways
 
-# Retrieve a specific VPN gateway policy
+# Retrieve a specific VPN gateway
 - ic_is_vpn_gateway_info:
     gateway: ibmcloud-vpn-gateway-baby
 '''
