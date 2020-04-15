@@ -66,7 +66,7 @@ options:
 '''
 
 EXAMPLES = r'''
-# Create VPN IKE v1 policy
+# Create VPN IKE v2 policy
 - ic_is_vpn_ike:
     policy: ibmcloud-vpn-ike-baby
     authentication_algorithm: sha256

@@ -20,7 +20,7 @@ short_description: Retrieve information about VPN IKE policy.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Retrieve information about VPN IKE policy from IBM Cloud.
+  - Retrieve information about VPN IKE policies from IBM Cloud.
 notes:
   - The result contains a list of policies.
 requirements:
