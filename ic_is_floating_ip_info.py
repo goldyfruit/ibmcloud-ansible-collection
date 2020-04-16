@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,32 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_floating_ip_info
-short_description: Retrieve information about floating IPs.
+short_description: Retrieve VPC floating IPs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about floating IPs from IBM Cloud.
+  - Floating IPs allow inbound and outbound traffic from the Internet
+    to an instance.
 notes:
-    - The result contains a list of floating IPs.
+  - The result contains a list of floating IPs.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    fip:
-        description:
-            - Restrict results to floating IP with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  fip:
+    description:
+      - Restrict results to floating IP with ID, name or address matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve floating IP list
-- ic_is_floating_ip_info:
+EXAMPLES = r'''
+- name: Retrieve floating IP list
+  ic_is_floating_ip_info:
 
-# Retrieve floating IP list and register the value
-- ic_is_floating_ip_info:
-  register: fips
-
-# Display fips registered value
-- debug:
-    var: fips
-
-# Retrieve a specific floating IP by ID, by name or by address
-- ic_is_floating_ip_info:
+- name: Retrieve specific floating
+  ic_is_floating_ip_info:
     fip: 128.128.129.129
 '''
 
@@ -64,16 +57,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    fip = sdk.Fip()
+    floating_ip = sdk.Fip()
 
-    name = module.params['fip']
+    fip = module.params['fip']
 
-    if name:
-        result = fip.get_floating_ip(name)
+    if fip:
+        result = floating_ip.get_floating_ip(fip)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = fip.get_floating_ips()
+        result = floating_ip.get_floating_ips()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 
