@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import floating_ip as sdk
@@ -12,61 +15,58 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_floating_ip
-short_description: Reserve or release floating IP.
+short_description: Manage VPC floating IP on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Reserver or release floating IP on IBM Cloud.
+  - Floating IPs allow inbound and outbound traffic from the Internet
+    to an instance.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    fip:
-        description:
-            -  Name that has to be given to the floating IP to reserve
-                or release.
-                During the removal an UUID or the address could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the floating IP has to
-               be created.
-        required: false
-    target:
-        description:
-            -  The target this address is to be bound to.
-        required: false
-    zone:
-        description:
-            -  The identity of the zone to provision a floating IP in.
-        required: false
-    state:
-        description:
-            - Should the resource be present, absent, attach or detach.
-        required: false
-        choices: [present, absent, attach, detach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  fip:
+    description:
+      - The unique user-defined name for this floating IP.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  target:
+    description:
+      - The target this address is to be bound to.
+    type: str
+  zone:
+    description:
+      - The name of the zone to provision a floating IP in.
+    type: str
+  state:
+    description:
+      - Should the resource be present, absent, attach or detach.
+    default: present
+    choices: [present, absent, reserve, release]
 '''
 
-EXAMPLES = '''
-# Reserve floating IP within a zone
-- ic_is_floating_ip:
+EXAMPLES = r'''
+- name: Reserve floating IP within a zone
+  ic_is_floating_ip:
     fip: ibmcloud-fip-baby
     zone: us-south-3
 
-# Reserve floating IP for a VSI (Virtual Server Instance) network interface
-- ic_is_floating_ip:
+- name: Reserve floating IP and bound it to a reserved IP
+  ic_is_floating_ip:
     fip: ibmcloud-fip-baby
-    target: r006-9914cbf3-f7cd-42dd-8e6f-bdbf902ca559
+    target: 69e55145-cc7d-4d8e-9e1f-cc3fb60b1793
 
-# Release floating IP
+- name: Release floating IP
 - ic_is_floating_ip:
-    fip: 129.129.10.10
-    state: absent
+    fip:  ibmcloud-fip-baby
+    state: release
 '''
 
 
@@ -87,7 +87,7 @@ def run_module():
         state=dict(
             type='str',
             default='present',
-            choices=['absent', 'present', 'attach', 'detach'],
+            choices=['absent', 'present', 'reserve', 'release'],
             required=False),
     )
 
@@ -96,48 +96,42 @@ def run_module():
         supports_check_mode=False
     )
 
-    fip = sdk.Fip()
+    floating_ip = sdk.Fip()
 
-    name = module.params["fip"]
+    fip = module.params["fip"]
     resource_group = module.params["resource_group"]
     target = module.params["target"]
     zone = module.params["zone"]
     state = module.params["state"]
 
-    if state == "absent" or state == "detach":
-        result = fip.release_floating_ip(name)
+    check = floating_ip.get_floating_ip(fip)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "floating IP {} doesn't exist")).format(name)
+    if state == "absent" or state == "release":
+        if "id" in check:
+            result = floating_ip.release_floating_ip(fip)
+            if "errors" in result:
+                module.fail_json(msg=result["errors"])
 
-        module.exit_json(changed=True, msg=(
-            "floating IP {} successfully release")).format(name)
+            payload = {"floating_ip": fip, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
+        payload = {"floating_ip": fip, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
-        result = fip.reserve_floating_ip(
-            name=name,
+        result = floating_ip.reserve_floating_ip(
+            name=fip,
             resource_group=resource_group,
             target=target,
-            zone=zone)
+            zone=zone
+        )
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = fip.get_floating_ip(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result["errors"])
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
