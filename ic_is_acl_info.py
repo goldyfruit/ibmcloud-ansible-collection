@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,34 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_acl_info
-short_description: Retrieve information about network ACLs.
+short_description: Retrieve VPC network ACL on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about network ACLs from IBM Cloud.
+  - A network ACL defines a set of packet filtering (5-tuple) rules for all
+    traffic in and out of a subnet. Both allow and deny rules can be defined,
+    and rules are stateless such that reverse traffic in response to allowed
+    traffic is not automatically permitted.
 notes:
-    - The result contains a list of network ACLs.
+  - The result contains a list of network ACLs.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    acl:
-        description:
-            - Restrict results to network ACL with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  acl:
+    description:
+      - Restrict results to network ACL with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve network ACL list
-- ic_is_acl_info:
+EXAMPLES = r'''
+- name: Retrieve network ACL list
+  ic_is_acl_info:
 
-# Retrieve network ACL list and register the value
-- ic_is_acl_info:
-  register: acls
-
-# Display acls registered value
-- debug:
-    var: acls
-
-# Retrieve a specific network ACL by ID or by name
-- ic_is_acl_info:
+- name: Retrieve specific network ACL
+  ic_is_acl_info:
     acl: ibmcloud-acl-baby
 '''
 
@@ -64,16 +59,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    acl = sdk.Acl()
+    network_acl = sdk.Acl()
 
-    name = module.params['acl']
+    acl = module.params['acl']
 
-    if name:
-        result = acl.get_network_acl(name)
+    if acl:
+        result = network_acl.get_network_acl(acl)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = acl.get_network_acls()
+        result = network_acl.get_network_acls()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 
