@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
 
@@ -23,7 +24,7 @@ description:
   - Retrieve information about VPN connection's local/peer CIDRs
     from IBM Cloud.
 notes:
-  - The result contains a list of local or peer CIDRs.
+  - The result contains a list of local/peer CIDRs.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -76,7 +77,7 @@ EXAMPLES = r'''
 - debug:
     var: cidrs
 
-# Retrieve a specific peer CIDR
+# Retrieve specific peer CIDR
 - ic_is_vpn_cidr_info:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
