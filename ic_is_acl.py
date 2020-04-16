@@ -239,6 +239,9 @@ def run_module():
 
             payload = {"network_acl": acl, "status": "deleted"}
             module.exit_json(changed=True, msg=payload)
+
+        payload = {"network_acl": acl, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
         if "id" in check:
             module.exit_json(changed=False, msg=check)
