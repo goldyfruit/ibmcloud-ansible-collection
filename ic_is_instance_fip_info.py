@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,50 +15,40 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_fip_info
-short_description: Retrieve floating IPs from a VSI.
+short_description: Retrieve attached floating IPs from a VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve floating IPs attached to VSI (Virtual Server
-      Instance) network interfaces on IBM Cloud.
+  - Retrieve attached floating IPs from a VSI (Virtual Server Instance)
+    on IBM Cloud.
 notes:
-    - The result contains a list of floating IPs.
+  - The result contains a list of floating IPs.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Instance UUID or name.
-        required: true
-    fip:
-        description:
-            - Floating IP name, ID or address.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - Instance UUID or name.
+    type: str
+    required: true
+  fip:
+    description:
+      - Floating IP name, ID or address.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve floating IPs attached to a VSI
-- ic_is_instance_fip_info:
+EXAMPLES = r'''
+- name: Retrieve floating IPs from a VSI
+  ic_is_instance_fip_info:
     instance: ibmcloud-vsi-baby
 
-# Retrieve specific floating IP attached to a VSI
+- name: Retrieve specific floating IP from a VSI
 - ic_is_instance_fip_info:
     instance: ibmcloud-vsi-baby
-    floating_ip: 192.234.192.234
-
-# Retrieve floating IPs and register the value
-- ic_is_instance_fip_info:
-    instance: ibmcloud-vsi-baby
-  register: fips
-
-# Display fips registered value
-- debug:
-    var: fips
+    floating_ip: 128.128.129.129
 '''
 
 
@@ -75,25 +67,27 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
     floating_ip = module.params['floating_ip']
 
-    interfaces = instance.get_instance_interfaces(name)
+    interfaces = vsi_instance.get_instance_interfaces(instance)
     if "errors" in interfaces:
         module.fail_json(msg=interfaces["errors"])
 
     nics = []
     fips = {}
     for interface in interfaces["network_interfaces"]:
-        data = instance.get_instance_interface_fips(name, interface["id"])
+        data = vsi_instance.get_instance_interface_fips(instance,
+                                                        interface["id"])
         if "errors" in data:
             module.fail_json(msg=data["errors"])
 
         if floating_ip:
-            fip = instance.get_instance_interface_fip(name, interface["id"],
-                                                      floating_ip)
+            fip = vsi_instance.get_instance_interface_fip(instance,
+                                                          interface["id"],
+                                                          floating_ip)
             if "errors" in data:
                 module.fail_json(msg=fip["errors"])
 
