@@ -237,7 +237,7 @@ def run_module():
             if "errors" in result:
                 module.fail_json(msg=result["errors"])
 
-            payload = {"acl": acl, "status": "deleted"}
+            payload = {"network_acl": acl, "status": "deleted"}
             module.exit_json(changed=True, msg=payload)
     else:
         if "id" in check:
