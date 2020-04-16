@@ -40,6 +40,7 @@ options:
   target:
     description:
       - The target this address is to be bound to.
+      - Target could be the network interface of VSI instance.
     type: str
   zone:
     description:
