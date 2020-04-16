@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import image as sdk_image
+from ibmcloud_python_sdk.vpc import image as sdk
 
 
 ANSIBLE_METADATA = {
@@ -13,42 +15,33 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_image_info
-short_description: Retrieve information VSI (Virtual Server Instance) images.
-author: James Regis (jregis)
+short_description: Retrieve VPC VSI images on IBM Cloud.
+author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Retrieve information about VSI (Virtual Server Instance) images from
-      IBM Cloud.
+  - An image provides source data for a volume. Images are either
+    system-provided, or created from another source, such as importing from
+    object storage.
 notes:
-    - The result contains a list of images.
+  - The result contains a list of images.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    image:
-        description:
-            - Restrict results to image with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  image:
+    description:
+      - Restrict results to image with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve image list
-- ic_is_image_info:
+EXAMPLES = r'''
+- name: Retrieve image list
+  ic_is_image_info:
 
-# Retrieve image list and register the value
-- ic_is_image_info:
-  register: images
-
-# Display images registered value
-- debug:
-    var: images
-
-# Retrieve a specific image by ID or by name
-- ic_is_image_info:
+- name: Retrieve specific image
+  ic_is_image_info:
     image: ibm-redhat-7-6-minimal-amd64-1
 '''
 
@@ -65,16 +58,16 @@ def run_module():
         supports_check_mode=False
     )
 
-    image = sdk_image.Image()
+    vsi_image = sdk.Image()
 
-    name = module.params['image']
+    image = module.params['image']
 
-    if name:
-        result = image.get_image(name)
+    if image:
+        result = vsi_image.get_image(image)
         if "errors" in result:
             module.fail_json(msg=result["errors"])
     else:
-        result = image.get_images()
+        result = vsi_image.get_images()
         if "errors" in result:
             module.fail_json(msg=result["errors"])
 
