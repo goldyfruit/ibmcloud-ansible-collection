@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,31 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_config_info
-short_description: Retrieve configuration used to initialize the VSI.
+short_description: Retrieve initial configuration used by a VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve configuration used to initialize the VSI (Virtual Server
-      Instance) on IBM Cloud.
+  - Retrieves configuration variables used to initialize the instance,
+    such as SSH keys and the Windows administrator password.
 notes:
-    - The result contains the configuration.
+  - The result contains the VSI configuration.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Instance UUID or name.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - Instance UUID or name.
+    type: str
+    required: true
 '''
 
-EXAMPLES = '''
-# Retrieve instance configuration
-- ic_is_instance_config_info:
+EXAMPLES = r'''
+- name: Retrieve VSI configuration
+  ic_is_instance_config_info:
     instance: ibmcloud-vsi-baby
-
-# Retrieve instance configuration and register the value
-- ic_is_instance_config_info:
-    instance: ibmcloud-vsi-baby
-  register: config
-
-# Display config registered value
-- debug:
-    var: config
 '''
 
 
@@ -55,7 +47,7 @@ def run_module():
     module_args = dict(
         instance=dict(
             type='str',
-            required=False),
+            required=True),
     )
 
     module = AnsibleModule(
@@ -63,14 +55,13 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
 
-    if name:
-        result = instance.get_instance_configuration(name)
-        if "errors" in result:
-            module.fail_json(msg=result["errors"])
+    result = vsi_instance.get_instance_configuration(instance)
+    if "errors" in result:
+        module.fail_json(msg=result["errors"])
 
     module.exit_json(**result)
 
