@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import loadbalancer as sdk
@@ -16,11 +18,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_listener
-short_description: Create or delete listener within a load balancer.
+short_description: Manage VPC load balancer listener IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete listener within a load balancer on IBM Cloud.
+  - This module creates a new listener to the load balancer.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -29,10 +31,6 @@ options:
       - Load balancer name or ID.
     type: str
     required: true
-  listeners:
-    description:
-      - Listener ID.
-    type: str
   connection_limit:
     description:
       - The connection limit of the listener.
@@ -46,7 +44,7 @@ options:
         description:
           - The policy action.
         type: str
-        choices: [ forward, redirect, target ]
+        choices: [forward, redirect, target]
       name:
         description:
           - The user-defined name for this policy.
@@ -66,7 +64,7 @@ options:
             - The condition of the rule.
           type: str
           required: true
-          choices: [ contains, equals, matches_regex ]
+          choices: [contains, equals, matches_regex]
         field:
           description:
             - HTTP header field.
@@ -76,7 +74,7 @@ options:
             - The type of the rule.
           type: str
           required: true
-          choices: [ header, hostname, path ]
+          choices: [header, hostname, path]
         value
           description:
             - Value to be matched for rule condition.
@@ -91,27 +89,26 @@ options:
             description
               - Identifies a load balancer pool by ID property.
             type: str
-            required: false
           http_status_code:
             description
               - The http status code in the redirect response.
             type: int
-            required: false
-          choices: [ 301, 302, 303, 307, 308 ]
+          choices: [301, 302, 303, 307, 308]
           url:
             description
               - The redirect target URL.
             type: str
-            required: false
   protocol:
     description:
       - The connection limit of the listener.
     type: str
-    choices: [ http, https, tcp ]
+    choices: [http, https, tcp]
   port:
     description:
       - The listener port number.
+      - C(port) option should be used as listener matcher for the deletion.
     type: int
+    required: true
   default_pool:
     description:
       - The default pool associated with the listener.
@@ -120,20 +117,20 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create listener into load balancer
-- ic_is_lb_listener:
+- name: Create listener
+  ic_is_lb_listener:
     lb: ibmcloud-lb-baby
     default_pool: ibmcloud-lb-pool-baby
-    port: 80
+    port: 443
     protocol: http
 
-# Create listener with policy and rules
-- ic_is_lb_listener:
+- name: Create listener with policy and rule
+  ic_is_lb_listener:
     lb: ibmcloud-lb-baby
     default_pool: ibmcloud-lb-pool-baby
     port: 443
@@ -151,14 +148,8 @@ EXAMPLES = r'''
         target:
           id: r006-0c1b2e3f-d38a-4c48-9f08-b4432c9601a6
 
-# Delete listener from load balancer by using listener ID
-- ic_is_lb_listener:
-    lb: ibmcloud-lb-baby
-    listener: r006-ac61921a-63d3-4af2-9063-2b734a817c95
-    state: absent
-
-# Delete listener from load balancer by using port number
-- ic_is_lb_listener:
+- name: Delete listener from load balancer
+  ic_is_lb_listener:
     lb: ibmcloud-lb-baby
     port: 443
     state: absent
@@ -170,9 +161,6 @@ def run_module():
         lb=dict(
             type='str',
             required=True),
-        listener=dict(
-            type='str',
-            required=False),
         connection_limit=dict(
             type='int',
             required=False),
@@ -229,7 +217,7 @@ def run_module():
             required=False),
         port=dict(
             type='int',
-            required=False),
+            required=True),
         protocol=dict(
             type='str',
             required=False,
@@ -252,7 +240,6 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    id = module.params['listener']
     connection_limit = module.params['connection_limit']
     certificate_instance = module.params['certificate_instance']
     policies = module.params['policies']
@@ -261,31 +248,21 @@ def run_module():
     default_pool = module.params['default_pool']
     state = module.params["state"]
 
+    check = loadbalancer.get_lb_listener(lb, port)
+
     if state == "absent":
-        listener = id
-        if port:
-            listener = int(port)
-        result = loadbalancer.delete_listener(lb, listener)
+        if "id" in check:
+            result = loadbalancer.delete_listener(lb, port)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "listener {} doesn't exist in load balancer {}".format(
-                          listener, lb)))
+            payload = {"listener": port, "lb": lb, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "listener {} successfully deleted from load balancer {}".format(
-              listener, lb)))
+        payload = {"listener": port, "lb": lb, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        listener = id
-        if port:
-            listener = int(port)
-        check = loadbalancer.get_lb_listener(lb, listener)
-
-        if "provisioning_status" in check:
+        if "id" in check:
             module.exit_json(changed=False, msg=check)
 
         result = loadbalancer.create_listener(
@@ -299,9 +276,9 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
