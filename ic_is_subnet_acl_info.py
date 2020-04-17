@@ -18,14 +18,14 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_acl_info
-short_description: Retrieve VPC network ACLs attached to a subnet on IBM Cloud.
+short_description: Retrieve VPC network ACL attached on subnet on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
   - This module retrieves the network ACL attached to the subnet specified
     by the identifier in the URL.
 notes:
-  - The result contains network ACLs.
+  - The result contains network ACL.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -37,7 +37,7 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: Retrieve network ACL list from subnet
+- name: Retrieve network ACL attached to subnet
   ic_is_subnet_acl_info:
     subnet: ibmcloud-subnet-baby
 '''
