@@ -37,7 +37,7 @@ options:
   region:
     description:
       - Restrict results to region with name matching.
-    required: false
+  type: str
 '''
 
 EXAMPLES = r'''

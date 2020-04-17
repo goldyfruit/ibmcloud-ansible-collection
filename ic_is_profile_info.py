@@ -33,6 +33,7 @@ options:
   profile:
     description:
       - Restrict results to VSI profile with name matching.
+  type: str
 '''
 
 EXAMPLES = r'''
