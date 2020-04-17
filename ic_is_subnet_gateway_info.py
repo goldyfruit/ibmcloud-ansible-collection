@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,40 +15,31 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_gateway_info
-short_description: Retrieve information about subnet's public gateway.
+short_description: Retrieve VPC public gateway attached on subnet on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about subnet's public gateway from IBM Cloud.
+  - This module retrieves the public gateway attached to the subnet specified
+    by the identifier in the URL.
 notes:
-    - The result contains public gateway.
+  - The result contains public gateway.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            - Subnet name or ID to retrieve the public gateway.
-        required: true
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Subnet name or ID .
+    type: str
+    required: true
 '''
 
-EXAMPLES = '''
-# Retrieve subnet's public gateway
-- ic_is_subnet_gateway_info:
+EXAMPLES = r'''
+- name: Retrieve public gateway attached to subnet
+  ic_is_subnet_gateway_info:
     subnet: ibmcloud-subnet-baby
-
-# Retrieve pubic gateway attached to a subnet and register the value
-- ic_is_subnet_info:
-    subnet: ibmcloud-subnet-baby
-  register: public_gateway
-
-# Display public_gateway registered value
-- debug:
-    var: public_gateway
 '''
 
 
@@ -62,13 +55,13 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params['subnet']
+    subnet = module.params['subnet']
 
-    result = subnet.get_subnet_public_gateway(name)
+    result = vsi_subnet.get_subnet_public_gateway(subnet)
     if "errors" in result:
-        module.fail_json(msg=result["errors"])
+        module.fail_json(msg=result)
 
     module.exit_json(**result)
 
