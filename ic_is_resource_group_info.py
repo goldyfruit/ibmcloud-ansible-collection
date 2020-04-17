@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk import resource_group as sdk
@@ -12,49 +15,39 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_resource_group_info
-short_description: Retrieve information about resource groups.
+short_description: Retrieve available resource groups on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about resource groups from IBM Cloud.
+  - Get a list of all resource groups in an account.
 notes:
-    - The result contains a list of resource groups.
+  - The result contains a list of resource groups.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    group:
-        description:
-            - Restrict results to group with name matching.
-        required: false
-    account:
-        description:
-            - Restrict results to resource groups for a specific account.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  group:
+    description:
+      - Restrict results to group with name matching.
+  type: str
+  account:
+    description:
+      - Restrict results to resource groups for specific account.
+  type: str
 '''
 
-EXAMPLES = '''
-# Retrieve resource group list
-- ic_is_resource_group_info:
+EXAMPLES = r'''
+- name: Retrieve resource group list
+  ic_is_resource_group_info:
 
-# Retrieve resource group list and register the value
-- ic_is_resource_group_info:
-  register: resource_groups
+- name: Retrieve specific resource group
+  ic_is_resource_group_info:
+    group: ibmcloud-rg-baby
 
-# Display resource groups registered value
-- debug:
-    var: resource_groups
-
-# Retrieve a specific resource group by name
-- ic_is_resource_group_info:
-    region: us-south
-
-# Retrieve resource groups for a specific account
-- ic_is_resource_group_info:
+- name: Retrieve resource group list for specific account
+  ic_is_resource_group_info:
     account: a3d7b8d01e261c24677937c29ab33f3c
 '''
 
@@ -82,15 +75,15 @@ def run_module():
     if group:
         result = resource.get_resource_group(group)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     elif account:
         result = resource.get_resource_groups_by_account(account)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = resource.get_resource_groups()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
