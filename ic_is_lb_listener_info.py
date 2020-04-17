@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -15,52 +17,44 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_listener_info
-short_description: Retrieve information about listeners within load balancer.
+short_description: Retrieve VPC listeners from load balancer on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about listeners within specific load balancers from
-      IBM Cloud.
+  - This module retrieves a list of all listeners that belong to the load
+    balancer.
 notes:
-    - The result contains a list of listeners.
+  - The result contains a list of listeners.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    lb:
-      description:
-        - Load balancer name or ID.
-      required: true
-    listener:
-      description:
-        - Restrict results to listener with UUID matching.
-      required: false
-    port:
-      description:
-        - Restrict results to listener with port matching.
-      required: false
+  lb:
+    description:
+      - Load balancer name or ID.
+    type: str
+    required: true
+  listener:
+    description:
+      - Restrict results to listener with UUID matching.
+    type: str
+  port:
+    description:
+      - Restrict results to listener with port matching.
+    type: int
 '''
 
 EXAMPLES = r'''
-# Retrieve listener list specific load balancer
-- ic_is_lb_listener_info:
+- name: Retrieve listener list from load balancer
+  ic_is_lb_listener_info:
     lb: ibmcloud-lb-baby
 
-# Retrieve listener list and register the value
-- ic_is_lb_listener_info:
+- name: Retrieve specific listener from load balancer
+  ic_is_lb_listener_info:
     lb: ibmcloud-lb-baby
-  register: listeners
+    listener: ibmcloud-lb-listener-baby
 
-# Display listeners registered value
-- debug:
-    var: listeners
-
-# Retrieve specific listener from a load balancer
-- ic_is_lb_listener_info:
-    lb: ibmcloud-lb-baby
-    listener: ibmcloud-listener-baby
-
-# Retrieve specific listener from a load balancer by using port
-- ic_is_lb_listener_info:
+- name: Retrieve specific listener from load balancer by using port
+  ic_is_lb_listener_info:
     lb: ibmcloud-lb-baby
     port: 443
 '''
@@ -93,16 +87,16 @@ def run_module():
     if id:
         listener = id
     elif port:
-        listener = int(port)
+        listener = port
 
     if listener:
         result = loadbalancer.get_lb_listener(lb, listener)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = loadbalancer.get_lb_listeners(lb)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
