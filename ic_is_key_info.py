@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import key as sdk_key
+from ibmcloud_python_sdk.vpc import key as sdk
 
 
 ANSIBLE_METADATA = {
@@ -13,42 +15,33 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_key_info
-short_description: Retrieve information about SSH keys
+short_description: Retrieve VPC SSH key on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about SSH keys from IBM Cloud.
+  -  A key contains a public SSH key which may be installed on instances when
+     they are created. Private keys are not stored.
 notes:
-    - The result contains a list of SSH keys.
+  - The result contains a list of SSH keys.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    key:
-        description:
-            - Restrict results to key with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  key:
+    description:
+      - Restrict results to key with IS or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve key list
-- ic_is_key_info:
+EXAMPLES = r'''
+- name: Retrieve key list
+  ic_is_key_info:
 
-# Retrieve key list and register the value
-- ic_is_key_info:
-  register: keys
-
-# Display keys registered value
-- debug:
-    var: keys
-
-# Retrieve a specific key by ID or by name
-- ic_is_key_info:
-    key: ibmcloud-ssh-key
+- name: Retrieve specific key
+  ic_is_key_info:
+    key: ibmcloud-key-baby
 '''
 
 
@@ -64,18 +57,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    key = sdk_key.Key()
+    vsi_key = sdk.Key()
 
-    name = module.params['key']
+    key = module.params['key']
 
-    if name:
-        result = key.get_key(name)
+    if key:
+        result = vsi_key.get_key(key)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = key.get_keys()
+        result = vsi_key.get_keys()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
