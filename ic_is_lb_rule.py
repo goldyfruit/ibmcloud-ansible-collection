@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import loadbalancer as sdk
@@ -16,12 +18,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_policy
-short_description: Create or delete policy within a load balancer.
+short_description: Manage VPC load balancer rules on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete policy within a listener from a load balancer
-    on IBM Cloud.
+  - Creates a new rule for the load balancer listener policy.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -32,12 +33,9 @@ options:
     required: true
   listeners:
     description:
-      - Listener ID (port number could be used to match the listener).
+      - Listener port or ID
     type: str
-  port:
-    description:
-      - The listener port number (instead of using listener ID).
-    type: int
+    required: true
   policy:
     description:
       - Policy name or ID.
@@ -51,7 +49,7 @@ options:
     description:
       - The condition of the rule.
     type: str
-    choices: [ contains, equals, matches_regex ]
+    choices: [contains, equals, matches_regex]
   field:
     description:
       - HTTP header field.
@@ -60,7 +58,7 @@ options:
     description:
       - The type of the rule.
     type: str
-    choices: [ header, hostname, path ]
+    choices: [header, hostname, path]
   value
     description:
       - Value to be matched for rule condition.
@@ -69,23 +67,22 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create rule (mathing listener by using port)
-- ic_is_lb_policy:
+- name: Create rule
+  ic_is_lb_rule:
     lb: ibmcloud-lb-baby
-    port: 443
+    listener: 443
     policy: ibmcloud-lb-policy-baby
     condition: contains
     field: MY-APP-HEADER
     type: header
     value: string
 
-
-# Delete listener from load balancer by using listener ID
+- name: Delete listener from load balancer by using listener ID
 - ic_is_lb_listener:
     lb: ibmcloud-lb-baby
     listener: r006-ac61921a-63d3-4af2-9063-2b734a817c95
@@ -110,9 +107,6 @@ def run_module():
             required=True),
         listener=dict(
             type='str',
-            required=False),
-        port=dict(
-            type='int',
             required=False),
         policy=dict(
             type='str',
@@ -149,42 +143,33 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    id = module.params['listener']
-    port = module.params['port']
+    listener = module.params['listener']
     policy = module.params['policy']
-    name = module.params['rule']
+    rule = module.params['rule']
     condition = module.params['condition']
     field = module.params['field']
     type = module.params['type']
     value = module.params['value']
     state = module.params["state"]
 
+    if not rule:
+        rule = None
+    check = loadbalancer.get_lb_listener_policy_rule(lb, listener, policy,
+                                                     rule)
     if state == "absent":
-        listener = id
-        if port:
-            listener = int(port)
-        result = loadbalancer.delete_rule(lb, listener, policy, name)
+        if "id" in check:
+            result = loadbalancer.delete_rule(lb, listener, policy, rule)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "rule {} doesn't exist within policy {} in listener {}"
-                        " for load balancer {}".format(name, policy, listener,
-                                                       lb)))
+            payload = {"rule": rule, "policy": policy, "listener": listener,
+                       "lb": lb, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "rule {} successfully deleted from policy {} for listener {} in"
-            " load balancer {}".format(name, policy, listener, lb)))
+        payload = {"rule": rule, "policy": policy, "listener": listener,
+                   "lb": lb, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        listener = id
-        if port:
-            listener = int(port)
-        check = loadbalancer.get_lb_listener_policy_rule(lb, listener, policy,
-                                                         name)
-
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
@@ -195,13 +180,13 @@ def run_module():
             condition=condition,
             field=field,
             type=type,
-            value=value,
+            value=value
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
