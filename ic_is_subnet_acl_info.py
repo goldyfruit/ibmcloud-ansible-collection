@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,40 +15,31 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_acl_info
-short_description: Retrieve information about subnet's network ACL.
+short_description: Retrieve VPC network ACLs attached to a subnet on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about subnet's network ACL from IBM Cloud.
+  - This module retrieves the network ACL attached to the subnet specified
+    by the identifier in the URL.
 notes:
-    - The result contains network ACL with rules.
+  - The result contains network ACLs.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            - Subnet name or ID to retrieve the network ACL.
-        required: true
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Subnet name or ID.
+    type: str
+    required: true
 '''
 
-EXAMPLES = '''
-# Retrieve subnet's network ACL list
-- ic_is_subnet_acl_info:
+EXAMPLES = r'''
+- name: Retrieve network ACL list from subnet
+  ic_is_subnet_acl_info:
     subnet: ibmcloud-subnet-baby
-
-# Retrieve network ACL attached to a subnet and register the value
-- ic_is_subnet_info:
-    subnet: ibmcloud-subnet-baby
-  register: network_acl
-
-# Display network_acl registered value
-- debug:
-    var: network_acl
 '''
 
 
@@ -62,13 +55,13 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params['subnet']
+    subnet = module.params['subnet']
 
-    result = subnet.get_subnet_network_acl(name)
+    result = vsi_subnet.get_subnet_network_acl(subnet)
     if "errors" in result:
-        module.fail_json(msg=result["errors"])
+        module.fail_json(msg=result)
 
     module.exit_json(**result)
 
