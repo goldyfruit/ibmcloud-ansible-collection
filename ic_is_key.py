@@ -123,7 +123,7 @@ def run_module():
             module.exit_json(changed=False, msg=check)
 
         # Not required in module_args because should not be required
-        # for key deletion. 
+        # for key deletion.
         if not public_key:
             module.fail_json(msg="public_key option is missing.")
 
