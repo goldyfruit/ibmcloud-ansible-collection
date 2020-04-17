@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import security as sdk
@@ -12,116 +15,123 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_security_group_rule
-short_description: Create or delete security group rule.
+short_description: Manage VPC security group rules on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete a rule within a security group on IBM Cloud.
+  - This module creates a new security group rule from a security group rule
+    prototype object. The prototype object is structured in the same way as
+    a retrieved security group rule and contains the information necessary to
+    create the rule.
+  - As part of creating a new rule in a security group, the rule is applied
+    to all the networking interfaces in the security group. Rules specify
+    which IP traffic a security group should allow. Security group rules are
+    stateful, such that reverse traffic in response to allowed traffic is
+    automatically permitted.
+  - A rule allowing inbound TCP traffic on port 80 also allows outbound TCP
+    traffic on port 80 without the need for an additional rule.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    group:
-        description:
-            -  The user-defined name for this security group.
-        required: true
-    rule:
-        description:
-            -  The rule ID (used for deletion).
-        required: true
-    direction:
-        description:
-            -  The direction of traffic to enforce.
-        required: false
-        choices: [inbound, outbound]
-    ip_version:
-        description:
-            -  The IP version to enforce.
-        required: false
-        choices: [ipv4]
-    protocol:
-        description:
-            -  The protocol to enforce.
-        required: false
-        choices: [all, icmp, tcp, udp],
-    port_min:
-        description:
-            -  For a single port, set port_max to the same value.
-        required: false
-    port_max:
-        description:
-            -  For a single port, set port_min to the same value.
-        required: false
-    code:
-        description:
-            -  May only be specified if type is also specified. Only
-               related with icmp protocol.
-        required: false
-    type:
-        description:
-            -  Only related with icmp protocol.
-        required: false
-    cidr_block:
-        description:
-            -  The remote CIDR block.
-        required: false
-    address:
-        description:
-            -  The remote IP address.
-        required: false
-    security_group:
-        description:
-            -  The remote security group.
-        required: false
-    unique:
-        description:
-            -  Avoid duplicate rules within the securiry group.
-        required: false
-        choices: [true, false]
-        default: true
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  group:
+    description:
+      - The user-defined name for this security group.
+    type: str
+    required: true
+  rule:
+    description:
+      - Rule ID.
+    type: str
+    required: true
+  direction:
+    description:
+      - The direction of traffic to enforce.
+    type: str
+    choices: [inbound, outbound]
+  ip_version:
+    description:
+      - The IP version to enforce.
+    type: str
+    choices: [ipv4]
+  protocol:
+    description:
+      - The protocol to enforce.
+    type: str
+    choices: [all, icmp, tcp, udp],
+  port_min:
+    description:
+      - For a single port, set C(port_max) to the same value.
+    type: int
+  port_max:
+    description:
+      - For a single port, set C(port_min) to the same value.
+    type: int
+  code:
+    description:
+      - May only be specified if type is also specified. Only related if
+        C(protocol=icmp) protocol.
+    type: int
+  type:
+    description:
+      - Only related with if C(protocol=icmp) protocol.
+    type: int
+  cidr_block:
+    description:
+      - The remote CIDR block.
+    type: str
+  address:
+    description:
+      - The remote IP address.
+    type: str
+  security_group:
+    description:
+      - The remote security group.
+    type: str
+  unique:
+    description:
+      - Avoid duplicate rules within the securiry group.
+    type: bool
+    default: true
+    choices: [true, false]
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create security group with rule (HTTPS open for one address)
-- ic_is_security_group_rule:
-    group: ibmcloud-sec-group-baby
-    vpc: ibmcloud-vpc-baby
-    rules:
-      - direction: inbound
-        protocol: tcp
-        port_min: 443
-        port_max: 443
-        remote:
-          address: 10.243.12.23
+EXAMPLES = r'''
+- name: Create rule (HTTPS open for one address)
+  ic_is_security_group_rule:
+    group: ibmcloud-sec-group-rule-baby
+    direction: inbound
+    protocol: tcp
+    port_min: 443
+    port_max: 443
+    remote:
+      address: 10.243.12.23
 
-# Create security group with rule (allow ICMP for any)
-- ic_is_security_group_rule:
-    group: ibmcloud-sec-group-baby
-    vpc: ibmcloud-vpc-baby
-    rules:
-      - direction: inbound
-        protocol: icmp
-        code: 0
-        type: 8
-        remote:
-          cidr_block: 0.0.0.0/0
+- name: Create rule (allow ICMP for any)
+  ic_is_security_group_rule:
+    group: ibmcloud-sec-group-rule-baby
+    direction: inbound
+    protocol: icmp
+    code: 0
+    type: 8
+    remote:
+      cidr_block: 0.0.0.0/0
 
-# Delete security group rule
-- ic_is_security_group_rule:
+- name: Delete rule
+  ic_is_security_group_rule:
     group: ibmcloud-sec-group-baby
     rule: r006-6cfe8f8e-1fca-4859-bd9a-ea6502e17a95
     state: absent
 '''
+
 
 security = sdk.Security()
 
@@ -129,7 +139,7 @@ security = sdk.Security()
 def _check_rule(module):
     data = security.get_security_group_rules(module.params["group"])
     if "errors" in data:
-        module.fail_json(msg=data["errors"])
+        module.fail_json(msg=data)
 
     msg = ("rule already exists in security group {}".format(
         module.params["group"]))
@@ -222,7 +232,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    name = module.params["group"]
+    group = module.params["group"]
     rule = module.params["rule"]
     direction = module.params["direction"]
     ip_version = module.params["ip_version"]
@@ -237,51 +247,46 @@ def run_module():
     unique = module.params["unique"]
     state = module.params["state"]
 
+    if not rule:
+        rule = None
+    check = security.get_security_group_rule(group, rule)
+
     if state == "absent":
-        result = security.delete_security_group_rule(name, rule)
+        if "id" in check:
+            result = security.delete_security_group_rule(group, rule)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "rule {} in security group {} doesn't exist".format(
-                            rule, name)))
+            payload = {"rule": rule, "security_group": group,
+                       "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "rule {} successfully deleted security group {}".format(
-                rule, name)))
+        payload = {"rule": rule, "security_group": group,
+                   "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            if unique:
+                _check_rule(module)
 
-        if unique:
-            _check_rule(module)
+            result = security.create_security_group_rule(
+                sg=group,
+                direction=direction,
+                ip_version=ip_version,
+                protocol=protocol,
+                port_max=port_max,
+                port_min=port_min,
+                code=code,
+                type=type,
+                cidr_block=cidr_block,
+                address=address,
+                security_group=security_group
+            )
 
-        result = security.create_security_group_rule(
-            sg=name,
-            direction=direction,
-            ip_version=ip_version,
-            protocol=protocol,
-            port_max=port_max,
-            port_min=port_min,
-            code=code,
-            type=type,
-            cidr_block=cidr_block,
-            address=address,
-            security_group=security_group,)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = security.get_security_group_rule(name, rule)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
-
-        module.exit_json(changed=True, msg=(result))
+            module.exit_json(changed=True, msg=result)
 
 
 def main():
