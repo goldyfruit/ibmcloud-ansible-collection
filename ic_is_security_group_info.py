@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,36 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_security_group_info
-short_description: Retrieve information about security groups.
+short_description: Retrieve VPC security groups on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about security groups from IBM Cloud.
+  - This module lists all existing security groups. Security groups provide
+    a convenient way to apply IP filtering rules to instances in the
+    associated VPC. With security groups, all traffic is denied by default,
+    and rules added to security groups define which traffic the security group
+    permits. Security group rules are stateful such that reverse traffic in
+    response to allowed traffic is automatically permitted.
 notes:
-    - The result contains a list of security groups.
+  - The result contains a list of security groups.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    group:
-        description:
-            - Restrict results to security group with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  group:
+    description:
+      - Restrict results to security group with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve security grouplist
-- ic_is_security_group_info:
+EXAMPLES = r'''
+- name: Retrieve security group list
+  ic_is_security_group_info:
 
-# Retrieve security group list and register the value
-- ic_is_security_group_info:
-  register: groups
-
-# Display groups registered value
-- debug:
-    var: groups
-
-# Retrieve specific security group
-- ic_is_security_group_info:
+- Retrieve specific security group
+  ic_is_security_group_info:
     group: ibmcloud-sec-group-baby
 '''
 
@@ -66,16 +63,16 @@ def run_module():
 
     security = sdk.Security()
 
-    name = module.params['group']
+    group = module.params['group']
 
-    if name:
-        result = security.get_security_group(name)
+    if group:
+        result = security.get_security_group(group)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = security.get_security_groups()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
