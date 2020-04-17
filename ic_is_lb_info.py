@@ -21,7 +21,7 @@ short_description: Retrieve VPC load balancer on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - This request retrieves a paginated list of all load balancers that belong
+  - This module retrieves a paginated list of all load balancers that belong
     to this account.
 notes:
   - The result contains a list of load balancers.
