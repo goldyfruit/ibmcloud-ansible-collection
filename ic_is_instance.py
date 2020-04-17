@@ -416,7 +416,7 @@ def run_module():
         module.exit_json(changed=False, msg=payload)
     else:
         if "id" in check:
-            module.exit_json(changed=False, msg=(check))
+            module.exit_json(changed=False, msg=check)
 
         result = vsi_instance.create_instance(
             name=instance,
@@ -438,7 +438,7 @@ def run_module():
         if "errors" in result:
             module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
