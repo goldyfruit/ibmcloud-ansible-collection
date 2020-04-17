@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import instance as sdk
@@ -12,72 +15,210 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance
-short_description: Create or delete VSI (Virtual Server Instance).
+short_description: Manage VPC VSI (Virtual Server Instance) on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete VSI (Virtual Server Instance) on IBM Cloud.
+  - The prototype object is structured in the same way as a retrieved instance,
+    and contains the information necessary to provision the new instance. The
+    instance is automatically started.
 requirements:
-    - "python >= 3.6"
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
+  instance:
+    description:
+      - The unique user-defined name for this virtual server instance
+        (and default system hostname).
+    type: str
+    required: true
+  keys:
+    description:
+      - The public SSH keys to install on the virtual server instance. Up to 10
+        keys may be provided; if no keys are provided the instance will be
+        inaccessible unless the image used provides a means of access.
+        For Windows instances, one of the keys will be used to encrypt the
+        administrator password.
+    type: list
+  network_interfaces:
+    description:
+      - Collection of additional network interfaces to create for the virtual
+        server instance.
+    type: list
+    suboptions:
+      allow_ip_spoofing:
         description:
-            - Name or UUID that has to be given to the instance to create
-               or delete.
+          - Indicates whether source IP spoofing is allowed on this interface.
+            If false, source IP spoofing is prevented on this interface.
+            If true,source IP spoofing is allowed on this interface.
+        type: bool
+        choices: [true, false]
+      ips:
+        description:
+          - Array of additional IP addresses to bind to the network interface.
+        type: list
+      name:
+        description:
+          - The user-defined name for network interface.
+        type: str
+      primary_ip:
+        description:
+          - Primary IP address to bind to the network interface.
+        type: str
+      security_groups:
+        description:
+          - Collection of security groups.
+        type: list
+      subnet:
+        description:
+          - The associated subnet.
+        type: str
         required: true
-    keys:
+  placement_target:
+    description:
+      - The placement for the virtual server instance.
+    type: str
+  volume_attachments:
+    description:
+      - Collection of volume attachments
+    type: list
+    suboptions:
+      delete_volume_on_instance_delete:
         description:
-            - The public SSH keys to install on the virtual server instance.
-                Up to 10 keys may be provided, name or UUID could be used.
-        required: false
-    profile:
+          - If set to true, when deleting the instance the volume will also
+            be deleted.
+        type: bool
+        choices: [true, false]
+      name:
         description:
-            - The profile name to use for this virtual server instance.
+          - The user-defined name for this volume attachment.
+        type: str
+      volume:
+        description:
+          - The identity of the volume to attach to the instance.
+        type: str
         required: true
-    resource_group:
+  boot_volume_attachment:
+    description:
+      - The boot volume attachment for the virtual server instance
+    type: dict
+    suboptions:
+      delete_volume_on_instance_delete:
         description:
-            - Name or UUID of the resource group where the instance has to
-               be created.
-        required: false
-    user_data:
+          - If set to true, when deleting the instance the volume will also
+            be deleted.
+        type: bool
+        choices: [true, false]
+      name:
         description:
-            - User data to be made available when setting up the virtual
-               server instance.
-        required: false
-    vpc:
+          - The user-defined name for this volume attachment.
+        type: str
+      volume:
         description:
-            - Name or UUID of the VPC the virtual server instance is to be
-               a part of.
-        required: false
-    image:
-        description:
-            - Name or UUID of the image to be used when provisioning
-               the virtual server instance.
+          - The identity of the volume to attach to the instance.
+        type: dict
         required: true
-    pni_subnet:
+        suboptions:
+          capacity:
+            description:
+              - The capacity of the volume in gigabytes.
+            type: int
+          encryption_key:
+            description:
+              - The key to use for encrypting this volume. If no encryption key
+                is provided, the volume's encryption will be provider-managed.
+            type: str
+          iops:
+            description:
+              - The bandwidth for the volume.
+            type: int
+          name:
+            description:
+              - The unique user-defined name for this volume
+            type: str
+          profile:
+            description:
+              - The profile name to use for this volume.
+            type: str
+  primary_network_interface:
+    description:
+      - Primary network interface.
+    type: dict
+    required: true
+    suboptions:
+      ips:
         description:
-            - Name or UUID of associated subnet where the virtual instance
-               will be part of, "PNI" stands for Primary Network Instance.
+          - Array of additional IP addresses to bind to the network interface.
+        type: list
+      name:
+        description:
+          - The user-defined name for network interface.
+        type: str
+      primary_ip:
+        description:
+          - Primary IP address to bind to the network interface.
+        type: str
+      security_groups:
+        description:
+          - Collection of security groups.
+        type: list
+      subnet:
+        description:
+          - The associated subnet.
+        type: str
         required: true
-    zone:
-        description:
-            - Name of the zone to provision the virtual server instance in.
-        required: true
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  source_template:
+    description:
+      - Identifies an instance template by a unique property.
+    type: str
+  profile:
+    description:
+      - The profile to use for this virtual server instance.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  user_data:
+    description:
+      - User data to be made available when setting up the virtual server
+        instance.
+    type: str
+  vpc:
+    description:
+      - The VPC the virtual server instance is to be a part of. If provided,
+        must match the VPC tied to the subnets of the instance's network
+        interfaces.
+    type: str
+  image:
+    description:
+      - The identity of the image to be used when provisioning the virtual
+        server instance.
+    type: str
+    required: true
+  pni_subnet:
+    description:
+      - Name or UUID of associated subnet where the virtual instance
+        will be part of, "PNI" stands for Primary Network Instance.
+    required: true
+  zone:
+    description:
+      - The identity of the zone to provision the virtual server instance in.
+    type: str
+    required: true
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Create instance (VSI)
 - ic_is_instance:
     instance: ibmcloud-vsi
@@ -144,7 +285,7 @@ def run_module():
             required=False),
         profile=dict(
             type='str',
-            required=False),
+            required=True),
         resource_group=dict(
             type='str',
             required=False),
@@ -163,7 +304,7 @@ def run_module():
                     required=False),
                 volume=dict(
                     type='str',
-                    required=False),
+                    required=True),
             ),
             required=False),
         boot_volume_attachment=dict(
@@ -206,7 +347,7 @@ def run_module():
             required=False),
         image=dict(
             type='str',
-            required=False),
+            required=True),
         primary_network_interface=dict(
             type='dict',
             options=dict(
@@ -226,10 +367,10 @@ def run_module():
                     type='str',
                     required=True),
             ),
-            required=False),
+            required=True),
         zone=dict(
             type='str',
-            required=False),
+            required=True),
         state=dict(
             type='str',
             default='present',
@@ -242,9 +383,9 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
     keys = module.params['keys']
     network_interfaces = module.params['network_interfaces']
     placement_target = module.params['placement_target']
@@ -258,29 +399,27 @@ def run_module():
     image = module.params['image']
     primary_network_interface = module.params['primary_network_interface']
     zone = module.params['zone']
+    state = module.params["state"]
 
-    if module.params["state"] == "absent":
-        result = instance.delete_instance(name)
+    check = vsi_instance.get_instance(instance)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "instance {} doesn't exist".format(name)))
+    if state == "absent":
+        if "id" in check:
+            result = vsi_instance.delete_instance(instance)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(
-            "instance {} successfully deleted".format(name)))
+            payload = {"instance": instance, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
+        payload = {"instance": instance, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-
-        check = instance.get_instance(name)
         if "id" in check:
             module.exit_json(changed=False, msg=(check))
 
-        result = instance.create_instance(
-            name=name,
+        result = vsi_instance.create_instance(
+            name=instance,
             keys=keys,
             profile=profile,
             network_interfaces=network_interfaces,
@@ -297,15 +436,7 @@ def run_module():
         )
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = instance.get_instance(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=(result))
 

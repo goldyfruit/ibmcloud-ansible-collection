@@ -31,7 +31,7 @@ requirements:
 options:
   instance:
     description:
-      - Instance UUID or name.
+      - VSI (Virtual Server Instance) name or ID.
     type: str
     required: true
 '''
@@ -61,7 +61,7 @@ def run_module():
 
     result = vsi_instance.get_instance_configuration(instance)
     if "errors" in result:
-        module.fail_json(msg=result["errors"])
+        module.fail_json(msg=result)
 
     module.exit_json(**result)
 

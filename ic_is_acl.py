@@ -120,6 +120,7 @@ options:
   state:
     description:
       - Should the resource be present or absent.
+    type: str
     default: present
     choices: [present, absent]
 '''
@@ -235,7 +236,7 @@ def run_module():
         if "id" in check:
             result = network_acl.delete_network_acl(acl)
             if "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
 
             payload = {"network_acl": acl, "status": "deleted"}
             module.exit_json(changed=True, msg=payload)
@@ -255,7 +256,7 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=result)
 

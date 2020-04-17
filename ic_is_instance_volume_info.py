@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,46 +15,41 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_volume_info
-short_description: Retrieve volume attachments from a VSI.
+short_description: Retrieve attached volumes from a VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve volume attachments from volumes attached to VSI (Virtual Server
-      Instance) on IBM Cloud.
+  - A volume attachment connects a volume to an instance. Each instance may
+    have many volume attachments but each volume attachment connects exactly
+    one instance to exactly one volume.
 notes:
-    - The result contains a list of volumes.
+  - The result contains a list of volume attachements and their volumes.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Instance UUID or name.
-        required: true
-    attachment:
-        description:
-            - Volume attachment name.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - VSI (Virtual Server Instance) name or ID.
+    type: str
+    required: true
+  attachment:
+    description:
+      - The volume attachment identifier.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve volume attachments from a VSI
-- ic_is_instance_volume_info:
+EXAMPLES = r'''
+- name: Retrieve volume attachments from a VSI
+  ic_is_instance_volume_info:
     instance: ibmcloud-vsi-baby
 
-# Retrieve specific volume attachment from a VSI and register the value
-- ic_is_instance_volume_info:
+- name: Retrieve specific volume attachment from a VSI
+  ic_is_instance_volume_info:
     instance: ibmcloud-vsi-baby
-    attachment: ibmcloud-volume-baby
-  register: attachment
-
-# Display attachment registered value
-- debug:
-    var: attachment
+    attachment: ibmcloud-volume-attachment-baby
 '''
 
 
@@ -71,19 +68,20 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
     attachment = module.params['attachment']
 
     if attachment:
-        result = instance.get_instance_volume_attachment(name, attachment)
+        result = vsi_instance.get_instance_volume_attachment(instance,
+                                                             attachment)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = instance.get_instance_volume_attachments(name)
+        result = vsi_instance.get_instance_volume_attachments(instance)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

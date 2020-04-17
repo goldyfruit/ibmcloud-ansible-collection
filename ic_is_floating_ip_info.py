@@ -64,11 +64,11 @@ def run_module():
     if fip:
         result = floating_ip.get_floating_ip(fip)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = floating_ip.get_floating_ips()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

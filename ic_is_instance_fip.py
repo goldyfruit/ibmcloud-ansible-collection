@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import instance as sdk
@@ -12,59 +15,59 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_fip
-short_description: Attach or detach a floating IP from VSI.
+short_description: Manage VPC floating IP attachment to VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Attach or detach a floating IP from VSI (Virtual Server Instance)
-      on IBM Cloud.
+  - Associates the specified floating IP with the specified network interface,
+    replacing any existing association. For this request to succeed, the
+    existing floating IP must not be required by another resource, such as a
+    public gateway.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            -  Instance name or ID
-        required: true
-    floatin_ip:
-        description:
-            -  The floating IP to attach on the VSI's network interface.
-        required: false
-    interface:
-        description:
-            - Network interface where the floating IP should be binded. If
-              no interface is provided the binding will happened on the
-              primary network interface.
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent, attach, detach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - VSI (Virtual Server Instance) name or ID.
+    required: true
+  floatin_ip:
+    description:
+      - The floating IP ID, name or address to attach on the VSI's network
+        interface.
+    required: true
+  interface:
+    description:
+      - Network interface where the floating IP should be attached. If no
+        interface is provided the attachment will happen on the primary
+        network interface.
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent, attach, detach]
 '''
 
-EXAMPLES = '''
-# Attach floating IP on VSI's primary network interface
-- ic_is_instance_fip:
+EXAMPLES = r'''
+- name: Attach floating IP primary network interface of a VSI
+  ic_is_instance_fip:
     instance: ibmcloud-vsi-baby
-    floating_ip: ibmcloud-vip-baby
+    floating_ip: ibmcloud-fip-baby
 
-# Attach floating IP on VSI specific interface
-- ic_is_instance_fip:
+- name: ttach floating IP on specific interface of a VSI
+  ic_is_instance_fip:
     instance: ibmcloud-vsi-baby
     floating_ip: ibmcloud-vip-baby
     interface: ibmclouc-nic-baby
 
-# Detach floating IP from VSI
-- ic_is_instance_fip:
+- name: Detach floating IP from VSI
+  ic_is_instance_fip:
     instance: ibmcloud-instance-baby
     floating_ip: ibmcloud-vip-baby
-    state: absent
+    state: detach
 '''
 
 
@@ -81,7 +84,7 @@ def run_module():
             required=False),
         state=dict(
             type='str',
-            default='present',
+            default='detach',
             choices=['absent', 'present', 'attach', 'detach'],
             required=False),
     )
@@ -91,38 +94,47 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params["instance"]
+    instance = module.params["instance"]
     floating_ip = module.params["floating_ip"]
     interface = module.params["interface"]
     state = module.params["state"]
 
     if not interface:
-        instance_info = instance.get_instance(name)
+        instance_info = vsi_instance.get_instance(instance)
         interface = instance_info["primary_network_interface"]["id"]
 
+    check = vsi_instance.get_instance_interface_fip(instance, interface,
+                                                    floating_ip)
+
     if state == "absent" or state == "detach":
-        result = instance.disassociate_floating_ip(
-            name, interface, floating_ip)
+        if "id" in check:
+            result = vsi_instance.disassociate_floating_ip(instance,
+                                                           interface,
+                                                           floating_ip)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            payload = {"floating_ip": floating_ip, "status": "detached"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "fip {} successfully disassociated from {}").format(
-                floating_ip, name))
-
+        payload = {"floating_ip": floating_ip, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        result = instance.associate_floating_ip(
-            instance=name,
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
+
+        result = vsi_instance.associate_floating_ip(
+            instance=instance,
             interface=interface,
-            fip=floating_ip)
+            fip=floating_ip
+        )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():

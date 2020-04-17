@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,42 +15,33 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_profile_info
-short_description: Retrieve information about instance profile.
+short_description: Retrieve VSI profiles on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about instance profile from IBM Cloud.
+  -  An instance profile specifies the performance characteristics and pricing
+     model for an instance.
 notes:
-    - The result contains a list of instance profiles.
+  - The result contains a list of VSI profiles.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    profile:
-        description:
-            - Restrict results to instance profile with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  profile:
+    description:
+      - Restrict results to VSI profile with ID or name matching.
+  type: str
 '''
 
-EXAMPLES = '''
-# Retrieve instance profile list
-- ic_is_instance_profile_info:
+EXAMPLES = r'''
+- name: Retrieve VSI profile list
+  ic_is_instance_profile_info:
 
-# Retrieve instance profile list and register the value
-- ic_is_instance_profile_info:
-  register: profiles
-
-# Display profiles registered value
-- debug:
-    var: profiles
-
-# Retrieve a specific instance profile
-- ic_is_instance_profile_info:
-    profile: cx2-4x8
+- name: Retrieve specific VSI profile
+  ic_is_instance_profile_info:
+    profile: ibmcloud-vsi-profile-baby
 '''
 
 
@@ -64,18 +57,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['profile']
+    profile = module.params['profile']
 
-    if name:
-        result = instance.get_instance_profile(name)
+    if profile:
+        result = vsi_instance.get_instance_profile(profile)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = instance.get_instance_profiles()
+        result = vsi_instance.get_instance_profiles()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

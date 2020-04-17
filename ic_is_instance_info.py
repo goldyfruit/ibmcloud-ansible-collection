@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import instance as sdk
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -12,41 +15,32 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_info
-short_description: Retrieve information about VSI (Virtual Server Instance).
+short_description: Retrieve VPC VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VSI (Virtual Server Instance) from IBM Cloud.
+  - Retrieve detailed information about VPC (Virtual Provate Cloud) VSI
+    (Virtual Server Instance) from IBM Cloud.
 notes:
-    - The result contains a list of instances.
+  - The result contains a list of VSI.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Restrict results to instance with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - Restrict results to instance with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve instance list
-- ic_is_instance_info:
+EXAMPLES = r'''
+- name: Retrieve VSI list
+  ic_is_instance_info:
 
-# Retrieve instance list and register the value
-- ic_is_instance_info:
-  register: instances
-
-# Display instances registered value
-- debug:
-    var: instances
-
-# Retrieve a specific instance
-- ic_is_instance_info:
+- name: Retrieve specific VSI
+  ic_is_instance_info:
     instance: ibmcloud-vsi-baby
 '''
 
@@ -63,18 +57,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    instance = sdk.Instance()
+    vsi_instance = sdk.Instance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
 
-    if name:
-        result = instance.get_instance(name)
+    if instance:
+        result = vsi_instance.get_instance(instance)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = instance.get_instances()
+        result = vsi_instance.get_instances()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

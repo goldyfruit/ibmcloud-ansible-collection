@@ -65,11 +65,11 @@ def run_module():
     if image:
         result = vsi_image.get_image(image)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = vsi_image.get_images()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

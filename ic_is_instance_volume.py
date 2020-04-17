@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import instance as sdk
@@ -12,77 +15,70 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_volume
-short_description: Attach or detach a volume from a VSI.
+short_description: Manage VPC volume attachment to VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Attach or detach a volume from VSI (Virtual Server Instance)
-      on IBM Cloud.
+  - The prototype object is structured in the same way as a retrieved volume
+    attachment, and contains the information necessary to create the new volume
+    attachment. The creation of a new volume attachment connects a volume to an
+    instance.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Instance name or ID where to attach the volume.
-        required: true
-    volume:
-        description:
-            -  The identity of the volume to attach to the instance.
-        required: false
-    attachment_name:
-        description:
-            - The user-defined name for this volume attachment.
-        required: false
-    delete_volume_on_instance_delete:
-        description:
-            - If set to true, when deleting the instance the volume will
-              also be deleted.
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent, attach, detach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - VSI (Virtual Server Instance) where to attach the volume.
+    type: str
+    required: true
+  volume:
+    description:
+      - The identity of the volume to attach to the instance.
+    type: str
+    required: true
+  attachment_name:
+    description:
+      - The user-defined name for this volume attachment.
+    type: str
+    required: true
+  delete_volume_on_instance_delete:
+    description:
+      - If set to true, when deleting the instance the volume will
+       also be deleted.
+    type: bool
+    choices: [true, false]
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: detach
+    choices: [present, absent, attach, detach]
 '''
 
-EXAMPLES = '''
-# Attach volume with random attachment name
-- ic_is_instance_volume:
+EXAMPLES = r'''
+- name: Attach volume to the VSI
+  ic_is_instance_volume:
     instance: ibmcloud-vsi-baby
     volume: ibmcloud-volume-baby
-    delete_volume_on_instance_delete: false
+    attachment_name: ibmcloud-attachment-baby
 
-# Attach volume with defined attachment name
-- ic_is_instance_volume:
+- name: Detach volume from VSI
+  ic_is_instance_volume:
     instance: ibmcloud-vsi-baby
     volume: ibmcloud-volume-baby
-    attachment_name: ibmcloud-attach-baby
-    delete_volume_on_instance_delete: false
-
-# Detach volume by using volume name or ID
-- ic_is_instance_volume:
-    instance: ibmcloud-instance-baby
-    volume: ibmcloud-volume-baby
-    state: absent
-
-# Detach volume by using volume attachment name
-- ic_is_instance_volume:
-    instance: ibmcloud-instance-baby
-    attachment_name: ibmcloud-attach-baby
-    state: absent
+    attachment_name: ibmcloud-attachment-baby
+    state: detach
 '''
 
-instance = sdk.Instance()
+
+vsi_instance = sdk.Instance()
 
 
-def _get_attachment(name, volume):
-    data = instance.get_instance_volume_attachments(name)
+def _get_attachment(instance, volume):
+    data = vsi_instance.get_instance_volume_attachments(instance)
     if "errors" in data:
         return data
 
@@ -99,10 +95,10 @@ def run_module():
             required=True),
         volume=dict(
             type='str',
-            required=False),
+            required=True),
         attachment_name=dict(
             type='str',
-            required=False),
+            required=True),
         delete_volume_on_instance_delete=dict(
             type='bool',
             required=False,
@@ -119,46 +115,43 @@ def run_module():
         supports_check_mode=False
     )
 
-    name = module.params["instance"]
+    instance = module.params["instance"]
     volume = module.params["volume"]
     attachment_name = module.params["attachment_name"]
     delete = module.params["delete_volume_on_instance_delete"]
     state = module.params["state"]
 
+    check = vsi_instance.get_instance_volume_attachment(instance,
+                                                        attachment_name)
+
     if state == "absent" or state == "detach":
-        result = None
-        if attachment_name:
-            result = instance.detach_volume(name, attachment_name)
-        else:
-            attachment_id = _get_attachment(name, volume)
-            result = instance.detach_volume(name, attachment_id)
+        if "id" in check:
+            if not attachment_name:
+                attachment_name = _get_attachment(instance, volume)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "volume {} is not attach to instance {}").format(
-                            volume, name))
+            result = vsi_instance.detach_volume(instance, attachment_name)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(
-            "volume successfully detached from {}").format(name))
+            payload = {"volume": volume, "status": "detached"}
+            module.exit_json(changed=True, msg=payload)
+
+        payload = {"volume": volume, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        check = instance.get_instance_volume_attachment(name, attachment_name)
-        if "status" in check:
-            module.exit_json(changed=False, msg=(check))
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
-        result = instance.attach_volume(
-            instance=name,
+        result = vsi_instance.attach_volume(
+            instance=instance,
             volume=volume,
             delete_volume_on_instance_delete=delete,
             name=attachment_name)
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():

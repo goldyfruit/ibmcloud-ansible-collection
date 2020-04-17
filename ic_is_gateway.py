@@ -4,6 +4,7 @@
 # GNU General Public License v3.0+
 # (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
+
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import gateway as sdk
 
@@ -17,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_gateway
-short_description: Create or delete public gateway.
+short_description: Manage VPC public gateway on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -126,7 +127,7 @@ def run_module():
         if "id" in check:
             result = public_gateway.delete_public_gateway(gateway)
             if "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
 
             payload = {"public_gateway": gateway, "status": "deleted"}
             module.exit_json(changed=True, msg=payload)
@@ -146,7 +147,7 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=result)
 

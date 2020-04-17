@@ -66,11 +66,11 @@ def run_module():
     if acl:
         result = network_acl.get_network_acl(acl)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = network_acl.get_network_acls()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

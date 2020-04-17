@@ -65,11 +65,11 @@ def run_module():
     if gateway:
         result = public_gateway.get_public_gateway(gateway)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = public_gateway.get_public_gateways()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 

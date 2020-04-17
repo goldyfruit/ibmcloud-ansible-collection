@@ -135,9 +135,9 @@ def run_module():
                     if "errors" in exist:
                         module.fail_json(msg=exist["errors"])
                     else:
-                        module.exit_json(changed=False, msg=(exist))
+                        module.exit_json(changed=False, msg=exist)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():

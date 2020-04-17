@@ -31,7 +31,7 @@ requirements:
 options:
   instance:
     description:
-      - Instance UUID or name.
+      - VSI (Virtual Server Instance) name or ID.
     type: str
     required: true
   fip:
@@ -74,7 +74,7 @@ def run_module():
 
     interfaces = vsi_instance.get_instance_interfaces(instance)
     if "errors" in interfaces:
-        module.fail_json(msg=interfaces["errors"])
+        module.fail_json(msg=interfaces)
 
     nics = []
     fips = {}
@@ -82,14 +82,14 @@ def run_module():
         data = vsi_instance.get_instance_interface_fips(instance,
                                                         interface["id"])
         if "errors" in data:
-            module.fail_json(msg=data["errors"])
+            module.fail_json(msg=data)
 
         if floating_ip:
             fip = vsi_instance.get_instance_interface_fip(instance,
                                                           interface["id"],
                                                           floating_ip)
             if "errors" in data:
-                module.fail_json(msg=fip["errors"])
+                module.fail_json(msg=fip)
 
             module.exit_json(**fip)
 

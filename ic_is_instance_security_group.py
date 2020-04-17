@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import security as sdk_security
@@ -13,79 +16,74 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_instance_security_group
-short_description: Attach or detach a security group from a VSI.
+short_description: Manage VPC security group attachment to VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Attach or detach a security group from VSI (Virtual Server Instance)
-      on IBM Cloud.
+  - When a network interface is added to a security group, the security group
+    rules are applied to the network interface. A request body is not required,
+    and if supplied, is ignored.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            - Instance name or ID where to attach the security group. If no
-              interface is provide then ecurity group will be attached to
-              primary network interface.
-        required: false
-    interface:
-        description:
-            -  Interface name or ID where to attach the security group on
-               the instance.
-        required: false
-    group:
-        description:
-            -  The identity of the security group to attach to the
-               instance/interface.
-        required: true
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent, attach, detach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - VSI (Virtual Server Instance) where to attach the security group.
+        If C(interface) options is not provided then security group will be
+        attached to VSI primary network interface.
+    type: str
+    required: true
+  interface:
+    description:
+      - VSI network interface where to attach the security group.
+    type: str
+  group:
+    description:
+      - The identity of the security group to attach to the interface.
+    required: true
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent, attach, detach]
 '''
 
-EXAMPLES = '''
-# Attach security group to VSI's primary network interface
-- ic_is_instance_security_group:
+EXAMPLES = r'''
+- name: Attach security group VSI primary network interface
+  ic_is_instance_security_group:
     instance: ibmcloud-vsi-baby
     group: ibmcloud-sec-group-baby
 
-# Attach security group on specific VSI's network interface
-- ic_is_instance_security_group:
+- name: Attach security group on specific VSI network interface
+  ic_is_instance_security_group:
     instance: ibmcloud-vsi-baby
     interface: ibmcloud-interface-baby
     group: ibmcloud-sec-group-baby
 
-# Detach security group from VSI's primary network interface
-- ic_is_instance_security_group:
+- name: Detach security group from VSI primary network interface
+  ic_is_instance_security_group:
     instance: ibmcloud-vsi-baby
     group: ibmcloud-sec-group-baby
-    state: absent
+    state: detach
 
-# Detach security group from specific VSI's network interface
+- name: Detach security group from specific VSI network interface
 - ic_is_instance_security_group:
     instance: ibmcloud-vsi-baby
     interface: ibmcloud-interface-baby
     group: ibmcloud-sec-group-baby
-    state: absent
+    state: detach
 '''
-
-security = sdk_security.Security()
-instance = sdk_instance.Instance()
 
 
 def run_module():
     module_args = dict(
         instance=dict(
             type='str',
-            required=False),
+            required=True),
         interface=dict(
             type='str',
             required=False),
@@ -94,7 +92,7 @@ def run_module():
             required=True),
         state=dict(
             type='str',
-            default='present',
+            default='detach',
             choices=['absent', 'present', 'attach', 'detach'],
             required=False),
     )
@@ -104,7 +102,10 @@ def run_module():
         supports_check_mode=False
     )
 
-    name = module.params["group"]
+    security = sdk_security.Security()
+    instance = sdk_instance.Instance()
+
+    group = module.params["group"]
     vsi = module.params["instance"]
     interface = module.params["interface"]
     state = module.params["state"]
@@ -113,39 +114,40 @@ def run_module():
     if not interface:
         instance_info = instance.get_instance(vsi)
         if "errors" in instance_info:
-            module.fail_json(msg=instance_info["errors"])
+            module.fail_json(msg=instance_info)
         target = instance_info["primary_network_interface"]["id"]
     else:
         nic_info = instance.get_instance_interface(vsi, interface)
         if "errors" in nic_info:
-            module.fail_json(msg=nic_info["errors"])
+            module.fail_json(msg=nic_info)
         target = nic_info["id"]
 
-    if state == "absent" or state == "detach":
-        result = security.remove_interface_security_group(name, target)
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "security group {} is not attach to {}").format(
-                            name, target))
+    check = security.get_security_group_interface(group, target)
 
-        module.exit_json(changed=True, msg=(
-            "security group {} successfully detached from {}".format(
-                name, target)))
+    if state == "absent" or state == "detach":
+        if "id" in check:
+            result = security.remove_interface_security_group(group, target)
+            if "errors" in result:
+                module.fail_json(msg=result)
+
+            payload = {"security_group": group, "status": "detached"}
+            module.exit_json(changed=True, msg=payload)
+
+        payload = {"security_group": group, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
         result = security.add_interface_security_group(
             interface=target,
-            security_group=name,
+            security_group=group,
             instance=vsi)
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
