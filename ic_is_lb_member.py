@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_member
-short_description: Manage VPC load balancer member on IBM Cloud.
+short_description: Manage VPC load balancer members on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

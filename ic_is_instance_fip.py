@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_instance_fip
-short_description: Manage VPC floating IP attachment to VSI on IBM Cloud.
+short_description: Manage VPC floating IP attachments to VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_acl
-short_description: Manage VPC network ACL on IBM Cloud.
+short_description: Manage VPC network ACLs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

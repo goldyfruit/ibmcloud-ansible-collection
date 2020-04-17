@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_key_info
-short_description: Retrieve VPC SSH key on IBM Cloud.
+short_description: Retrieve VPC SSH keys on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

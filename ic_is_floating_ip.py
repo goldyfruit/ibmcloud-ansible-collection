@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_floating_ip
-short_description: Manage VPC floating IP on IBM Cloud.
+short_description: Manage VPC floating IPs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

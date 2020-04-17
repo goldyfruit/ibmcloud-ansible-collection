@@ -19,7 +19,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_instance_security_group
-short_description: Manage VPC security group attachment to VSI on IBM Cloud.
+short_description: Manage VPC security group attachments to VSI on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

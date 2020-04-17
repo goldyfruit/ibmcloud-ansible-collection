@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_acl_info
-short_description: Retrieve VPC network ACL on IBM Cloud.
+short_description: Retrieve VPC network ACLs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:

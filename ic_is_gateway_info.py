@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_gateway_info
-short_description: Retrieve VPC public gateway on IBM Cloud.
+short_description: Retrieve VPC public gateways on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
