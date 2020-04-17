@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import loadbalancer as sdk
@@ -16,11 +18,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_member
-short_description: Create or delete pool member within a load balancer.
+short_description: Manage VPC load balancer member on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete member within a pool from a load balancer on IBM Cloud.
+  - This module creates a new member and adds the member to the pool.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -62,21 +64,21 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create member in a pool using instance name
-- ic_is_lb_member:
+- name: Create member using instance name
+  ic_is_lb_member:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     port: 443
     target:
       instance: ibmcloud-vsi-baby
 
-# Create member in a pool using instance IP address and a weight
-- ic_is_lb_member:
+- name: Create member with a weight using instance IP address
+  ic_is_lb_member:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     port: 443
@@ -84,16 +86,16 @@ EXAMPLES = r'''
     target:
       address: 10.12.34.11
 
-# Delete member from a pool using instance name
-- ic_is_lb_member:
+- name: Delete member using instance name
+  ic_is_lb_member:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     target:
       instance: ibmcloud-vsi-baby
     state: absent
 
-# Delete member from a pool using IP address
-- ic_is_lb_member:
+- name: Delete member using instance IP address
+  ic_is_lb_member:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     target:
@@ -140,46 +142,37 @@ def run_module():
     weight = module.params['weight']
     state = module.params["state"]
 
+    check = loadbalancer.get_lb_pool_member(lb, pool, target)
+
     if state == "absent":
-        result = loadbalancer.delete_member(lb, pool, target)
+        if "id" in check:
+            if check["port"] == port:
+                result = loadbalancer.delete_member(lb, pool, target)
+                if "errors" in result:
+                    module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "member {} doesn't exist in pool {} for load balancer"
-                        " {}".format(target, pool, lb)))
+            payload = {"member": target, "pool": pool, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "member {} successfully deleted from pool {} for load balancer"
-            " {}".format(target, pool, lb)))
+        payload = {"member": target, "pool": pool, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-
-        data = loadbalancer.get_lb_pool_members(lb, pool)
-        if "errors" in data:
-            module.fail_json(msg=data)
-
-        for member in data["members"]:
-            if (
-                member["port"] == port
-                and member["target"]["address"] == target
-              ):
-                module.exit_json(changed=False, msg=member)
+        if "id" in check:
+            if check["port"] == port:
+                module.exit_json(changed=False, msg=check)
 
         result = loadbalancer.create_member(
             lb=lb,
             pool=pool,
             port=port,
             target=target,
-            weight=weight,
+            weight=weight
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
