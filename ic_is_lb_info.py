@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -15,36 +17,29 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_info
-short_description: Retrieve information about load balancers.
+short_description: Retrieve VPC load balancer on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about load balancers from IBM Cloud.
+  - This request retrieves a paginated list of all load balancers that belong
+    to this account.
 notes:
-    - The result contains a list of load balancers.
+  - The result contains a list of load balancers.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    lb:
-      description:
-        - Restrict results to load balancer with UUID or name matching.
-      required: false
+  lb:
+    description:
+      - Restrict results to load balancer with ID or name matching.
+    type: str
 '''
 
 EXAMPLES = r'''
-# Retrieve load balancer list
-- ic_is_lb_info:
+- name: Retrieve load balancer list
+  ic_is_lb_info:
 
-# Retrieve load balancer list and register the value
-- ic_is_lb_info:
-  register: lbs
-
-# Display lbs registered value
-- debug:
-    var: lbs
-
-# Retrieve a specific load balancer
-- ic_is_lb_info:
+- name: Retrieve specific load balancer
+  ic_is_lb_info:
     lb: ibmcloud-lb-baby
 '''
 
@@ -63,16 +58,16 @@ def run_module():
 
     loadbalancer = sdk.Loadbalancer()
 
-    name = module.params['lb']
+    lb = module.params['lb']
 
-    if name:
-        result = loadbalancer.get_lb(name)
+    if lb:
+        result = loadbalancer.get_lb(lb)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = loadbalancer.get_lbs()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
