@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import geo as sdk_geo
+from ibmcloud_python_sdk.vpc import geo as sdk
 
 
 ANSIBLE_METADATA = {
@@ -13,42 +15,38 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_region_info
-short_description: Retrieve information about available regions.
+short_description: Retrieve VPC regions on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about regions availables on IBM Cloud.
+  - This module lists all regions. Each region is a separate geographic area
+    that contains multiple isolated zones. Resources can be provisioned into
+    a one or more zones in a region. Each zone is isolated, but connected to
+    other zones in the same region with low-latency and high-bandwidth links.
+  - Regions represent the top-level of fault isolation available. Resources
+    deployed within a single region also benefit from the low latency afforded
+    by geographic proximity.
 notes:
-    - The result contains a list of regions.
+  - The result contains a list of regions.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    region:
-        description:
-            - Restrict results to region with name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  region:
+    description:
+      - Restrict results to region with name matching.
+    required: false
 '''
 
-EXAMPLES = '''
-# Retrieve region list
-- ic_is_region_info:
+EXAMPLES = r'''
+- name: Retrieve region list
+  ic_is_region_info:
 
-# Retrieve region list and register the value
-- ic_is_region_info:
-  register: regions
-
-# Display regions registered value
-- debug:
-    var: regions
-
-# Retrieve a specific region by name
-- ic_is_region_info:
-    region: us-south
+- Retrieve specific region
+  ic_is_region_info:
+    region: ibmcloud-region-baby
 '''
 
 
@@ -64,18 +62,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    geo = sdk_geo.Geo()
+    geo = sdk.Geo()
 
-    name = module.params['region']
+    region = module.params['region']
 
-    if name:
-        result = geo.get_region(name)
+    if region:
+        result = geo.get_region(region)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = geo.get_regions()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
