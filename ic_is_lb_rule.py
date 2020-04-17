@@ -82,18 +82,10 @@ EXAMPLES = r'''
     type: header
     value: string
 
-- name: Delete listener from load balancer by using listener ID
-- ic_is_lb_listener:
+- name: Delete rule
+  ic_is_lb_rule:
     lb: ibmcloud-lb-baby
     listener: r006-ac61921a-63d3-4af2-9063-2b734a817c95
-    policy: ibmcloud-lb-policy-baby
-    rule: 70294e14-4e61-11e8-bcf4-0242ac110004
-    state: absent
-
-# Delete listener from load balancer by using port number
-- ic_is_lb_listener:
-    lb: ibmcloud-lb-baby
-    port: 443
     policy: ibmcloud-lb-policy-baby
     rule: 70294e14-4e61-11e8-bcf4-0242ac110004
     state: absent
