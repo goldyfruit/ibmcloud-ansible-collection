@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -15,55 +17,42 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_policy_info
-short_description: Retrieve information about policies from load balancer.
+short_description: Retrieve VPC load balancer policy on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about policies from listeners within specific load
-      balancers from IBM Cloud.
+  - Retrieves a list of all policies belonging to the load balancer listener.
 notes:
-    - The result contains a list of policies.
+  - The result contains a list of policies.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    lb:
-      description:
-        - Load balancer name or ID.
-      required: true
-    listener:
-      description:
-        - Restrict results to listener with ID or port matching.
-      required: false
-    port:
-      description:
-        - Restrict results to listener with port matching.
-      required: false
-    policy:
-      description:
-        - Restrict results to policy with name or ID matching.
-      required: false
+  lb:
+    description:
+      - Load balancer name or ID.
+    type: str
+    required: true
+  listener:
+    description:
+      - Restrict results to listener with ID or port matching.
+    type: str
+    required: true
+  policy:
+    description:
+      - Restrict results to policy with name or ID matching.
+    type: str
 '''
 
 EXAMPLES = r'''
-# Retrieve policiy list from specific listener
-- ic_is_lb_policy_info:
+- name: Retrieve policy list from specific listener (ID filtering)
+  ic_is_lb_policy_info:
     lb: ibmcloud-lb-baby
     listener: r006-e503af14-7ca1-4bb6-a8eb-f25b73323041
 
-# Retrieve policy list and register the value
-- ic_is_lb_policy_info:
+- name: Retrieve specific policy from listener (port filtering)
+  ic_is_lb_policy_info:
     lb: ibmcloud-lb-baby
-    listener: r006-e503af14-7ca1-4bb6-a8eb-f25b73323041
-  register: policies
-
-# Display policies registered value
-- debug:
-    var: policies
-
-# Retrieve specific policy from listener (port filtering)
-- ic_is_lb_policy_info:
-    lb: ibmcloud-lb-baby
-    port: 443
+    listener: 443
     policy: ibmcloud-lb-policy-baby
 '''
 
@@ -75,10 +64,7 @@ def run_module():
             required=True),
         listener=dict(
             type='str',
-            required=False),
-        port=dict(
-            type='int',
-            required=False),
+            required=True),
         policy=dict(
             type='str',
             required=False),
@@ -92,23 +78,17 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    id = module.params['listener']
-    port = module.params['port']
-    name = module.params['policy']
+    listener = module.params['listener']
+    policy = module.params['policy']
 
-    if id:
-        listener = id
-    elif port:
-        listener = int(port)
-
-    if name:
-        result = loadbalancer.get_lb_listener_policy(lb, listener, name)
+    if policy:
+        result = loadbalancer.get_lb_listener_policy(lb, listener, policy)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = loadbalancer.get_lb_listener_policies(lb, listener)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
