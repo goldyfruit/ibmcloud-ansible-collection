@@ -107,6 +107,7 @@ options:
         description:
           - The ICMP traffic type to allow. If unspecified, all types are
             allowed by this rule.
+          - Required if C(protocol=icmp).
         type: int
   source_network_acl:
     description:
