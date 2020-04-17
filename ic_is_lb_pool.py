@@ -3,6 +3,7 @@
 
 # GNU General Public License v3.0+
 
+
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import loadbalancer as sdk
 
@@ -16,11 +17,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_pool
-short_description: Create or delete pool within a load balancer.
+short_description: Manage VPC load balancer pools on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete pool within a load balancer on IBM Cloud.
+  - This module creates a new pool from a pool prototype object.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -39,7 +40,7 @@ options:
       - The load balancing algorithm.
     type: str
     required: true
-    choices: [ least_connections, round_robin, weighted_round_robin ]
+    choices: [least_connections, round_robin, weighted_round_robin]
   members:
     description:
       - The members for this load balancer pool.
@@ -74,7 +75,7 @@ options:
       - The pool protocol.
     type: str
     required: true
-    choices: [ http, https, tcp ]
+    choices: [http, https, tcp]
   session_persistence:
     description:
       - The session persistence of this pool.
@@ -89,7 +90,7 @@ options:
           - The session persistence type.
         type: str
         required: true
-        choices: [ source_ip, app_cookie, http_cookie ]
+        choices: [source_ip, app_cookie, http_cookie]
   health_monitor:
     description:
       - The health monitor of this pool.
@@ -121,18 +122,18 @@ options:
         - The pool protocol.
       type: str
       required: true
-      choices: [ http, https, tcp ]
+      choices: [http, https, tcp]
   state:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create pool into load balancer
-- ic_is_lb_pool:
+- name: Create pool with members
+  ic_is_lb_pool:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     algorithm: round_robin
@@ -151,8 +152,8 @@ EXAMPLES = r'''
         target:
           address: 10.0.12.16
 
-# Create pool into load balancer without members
-- ic_is_lb_pool:
+- name: Create pool without members
+  ic_is_lb_pool:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     algorithm: round_robin
@@ -164,8 +165,8 @@ EXAMPLES = r'''
       type: http
       url_path: /
 
-# Delete pool from load balancer
-- ic_is_lb_pool:
+- name: Delete pool
+  ic_is_lb_pool:
     lb: ibmcloud-lb-baby
     pool: ibmcloud-lb-pool-baby
     state: absent
@@ -263,7 +264,7 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    name = module.params['pool']
+    pool = module.params['pool']
     algorithm = module.params['algorithm']
     members = module.params['members']
     protocol = module.params['protocol']
@@ -271,29 +272,26 @@ def run_module():
     health_monitor = module.params['health_monitor']
     state = module.params["state"]
 
+    check = loadbalancer.get_lb_pool(lb, pool)
+
     if state == "absent":
-        result = loadbalancer.delete_pool(lb, name)
-
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "pool {} doesn't exist in load balancer {}".format(
-                          name, lb)))
-
-        module.exit_json(changed=True, msg=(
-            "pool {} successfully deleted from load balancer {}".format(
-              name, lb)))
-    else:
-        check = loadbalancer.get_lb_pool(lb, name)
         if "id" in check:
-            module.exit_json(changed=False, msg=(check))
+            result = loadbalancer.delete_pool(lb, pool)
+            if "errors" in result:
+                module.fail_json(msg=result)
+
+            payload = {"pool": pool, "lb": lb, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
+
+            payload = {"pool": pool, "lb": lb, "status": "not_found"}
+            module.exit_json(changed=False, msg=payload)
+    else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
         result = loadbalancer.create_pool(
             lb=lb,
-            name=name,
+            name=pool,
             algorithm=algorithm,
             members=members,
             protocol=protocol,
@@ -302,9 +300,9 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
