@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,47 +15,40 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_security_group_rule_info
-short_description: Retrieve information about rules from a security group.
+short_description: Retrieve VPC security group rules on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about rules from a security group from IBM Cloud.
+  - This module lists all the security group rules for a particular security
+    group. These rules define what traffic the security group permits.
+    Security group rules are stateful, such that reverse traffic in response
+    to allowed traffic is automatically permitted.
 notes:
-    - The result contains a list of rules.
+  - The result contains a list of rules.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    group:
-        description:
-            - Restrict results to security group with UUID or name matching.
-        required: true
-    rule:
-        description:
-            - Restrict results to rule with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  group:
+    description:
+      - Security group ID or name.
+    type: str
+    required: true
+  rule:
+    description:
+      - Restrict results to rule with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve rules from security group
-- ic_is_security_group_rule_info:
+EXAMPLES = r'''
+- name: Retrieve rules from security group
+  ic_is_security_group_rule_info:
     group: ibmcloud-sec-group-baby
 
-# Retrieve rules from security group and register the value
-- ic_is_security_group_rule_info:
-    group: ibmcloud-sec-group-baby
-  register: rules
-
-# Display rules registered value
-- debug:
-    var: rules
-
-# Retrieve specific rule from security group
-- ic_is_security_group_rule_info:
+- name: Retrieve specific rule from security group
+  ic_is_security_group_rule_info:
     group: ibmcloud-sec-group-baby
     rule: ibmcloud-sec-group-rule-baby
 '''
@@ -76,17 +71,17 @@ def run_module():
 
     security = sdk.Security()
 
-    name = module.params['group']
+    group = module.params['group']
     rule = module.params['rule']
 
     if rule:
-        result = security.get_security_group_rule(name, rule)
+        result = security.get_security_group_rule(group, rule)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = security.get_security_group_rules(name)
+        result = security.get_security_group_rules(group)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
