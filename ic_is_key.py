@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import key as sdk
@@ -12,62 +15,56 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_key
-short_description: Create or delete a SSH key
+short_description: Manage VPC SSH key on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete a SSH key on IBM Cloud.
+  - The prototype object is structured in the same way as a retrieved key,
+    and contains the information necessary to create the new key. The public
+    key value must be provided.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    key:
-        description:
-            -  Name that has to be given to the SSH key to create or delete.
-                During the removal an UUID could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the SSH key has to
-               be created.
-        required: false
-    public_key:
-        description:
-            -  A unique public SSH key to import, encoded in PEM format.
-                The key (prior to encoding) must be either 2048 or 4096
-                bits long.
-        required: false
-    type:
-        description:
-            -  Indicates whether this VPC should be connected to Classic
-               Infrastructure.
-        required: false
-        choices: [rsa]
-        default: rsa
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  key:
+    description:
+      - The unique user-defined name for this key.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  public_key:
+    description:
+      - A unique public SSH key to import, encoded in PEM format. The key
+        (prior to encoding) must be either 2048 or 4096 bits long.
+    type: str
+  type:
+    description:
+      - The cryptosystem used by this key
+    default: rsa
+    choices: [rsa]
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create SSH key
-- ic_is_key:
-    name: ibmcloud-key-user1
+EXAMPLES = r'''
+- name: Create SSH key
+  ic_is_key:
+    name: ibmcloud-key-baby
     public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChXZYzE545Uc5PU...
-    resource_group: advisory
-    type: rsa
 
-# Delete SSH key
-- ic_is_key:
-    vpc: ibmcloud-key-user1
-    resource_group: advisory
+- name: Delete SSH key
+  ic_is_key:
+    name: ibmcloud-key-baby
     state: absent
 '''
 
@@ -100,42 +97,45 @@ def run_module():
         supports_check_mode=False
     )
 
-    key = sdk.Key()
+    vsi_key = sdk.Key()
 
-    name = module.params['key']
+    key = module.params['key']
     resource_group = module.params["resource_group"]
     public_key = module.params["public_key"]
     key_type = module.params["type"]
     state = module.params["state"]
 
+    check = vsi_key.get_key(key)
+
     if state == "absent":
-        result = key.delete_key(name)
+        if "id" in check:
+            result = vsi_key.delete_key(key)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "key {} doesn't exist").format(name))
+            payload = {"key": key, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "key {} successfully deleted")).format(name)
-
+        payload = {"key": key, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        result = key.create_key(name=name, resource_group=resource_group,
-                                public_key=public_key, type=key_type)
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
+
+        # Not required in module_args because should not be required
+        # for key deletion. 
+        if not public_key:
+            module.fail_json(msg="public_key option is missing.")
+
+        result = vsi_key.create_key(
+            name=key,
+            resource_group=resource_group,
+            public_key=public_key,
+            type=key_type
+        )
 
         if "errors" in result:
-            for key_name in result["errors"]:
-                if key_name["code"] != "conflict_field":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = key.get_key(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=exist)
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=result)
 
