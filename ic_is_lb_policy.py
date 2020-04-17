@@ -3,6 +3,7 @@
 
 # GNU General Public License v3.0+
 
+
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import loadbalancer as sdk
 
@@ -16,12 +17,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_lb_policy
-short_description: Create or delete policy within a load balancer.
+short_description: Manage VPC load balancer policy on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete policy within a listener from a load balancer
-    on IBM Cloud.
+  - Creates a new policy to the load balancer listener.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -32,21 +32,18 @@ options:
     required: true
   listeners:
     description:
-      - Listener ID (port number could be used to match the listener).
+      - Listener port or ID
     type: str
-  port:
-    description:
-      - The listener port number (instead of using listener ID).
-    type: int
   action:
     description:
       - The policy action.
     type: str
-    choices: [ forward, redirect, target ]
+    choices: [forward, redirect, target]
   policy:
     description:
       - The user-defined name for this policy.
     type: str
+    required: true
   priority:
     description:
       - Priority of the policy.
@@ -62,7 +59,7 @@ options:
         - The condition of the rule.
       type: str
       required: true
-      choices: [ contains, equals, matches_regex ]
+      choices: [contains, equals, matches_regex]
     field:
       description:
         - HTTP header field.
@@ -72,7 +69,7 @@ options:
         - The type of the rule.
       type: str
       required: true
-      choices: [ header, hostname, path ]
+      choices: [header, hostname, path]
     value
       description:
         - Value to be matched for rule condition.
@@ -87,31 +84,28 @@ options:
         description
           - Identifies a load balancer pool by ID property.
         type: str
-        required: false
       http_status_code:
         description
           - The http status code in the redirect response.
         type: int
-        required: false
-      choices: [ 301, 302, 303, 307, 308 ]
+      choices: [301, 302, 303, 307, 308]
       url:
         description
           - The redirect target URL.
         type: str
-        required: false
   state:
     description:
       - Should the resource be present or absent.
     type: str
+      default: present
     choices: [present, absent]
-    default: present
 '''
 
 EXAMPLES = r'''
-# Create policy (mathing listener by using port)
-- ic_is_lb_policy:
+- name: Create policy
+  ic_is_lb_policy:
     lb: ibmcloud-lb-baby
-    port: 443
+    listeners: 443
     policy: ibmcloud-lb-policy-baby
     action: forward
     priority: 5
@@ -123,17 +117,11 @@ EXAMPLES = r'''
     target:
       id: r006-0c1b2e3f-d38a-4c48-9f08-b4432c9601a6
 
-
-# Delete listener from load balancer by using listener ID
-- ic_is_lb_listener:
+- name: Delete policy
+  ic_is_lb_policy:
     lb: ibmcloud-lb-baby
-    listener: r006-ac61921a-63d3-4af2-9063-2b734a817c95
-    state: absent
-
-# Delete listener from load balancer by using port number
-- ic_is_lb_listener:
-    lb: ibmcloud-lb-baby
-    port: 443
+    listeners: 443
+    policy: ibmcloud-lb-policy-baby
     state: absent
 '''
 
@@ -146,12 +134,9 @@ def run_module():
         listener=dict(
             type='str',
             required=False),
-        port=dict(
-            type='int',
-            required=False),
         policy=dict(
             type='str',
-            required=False),
+            required=True),
         action=dict(
             type='str',
             required=False),
@@ -207,39 +192,30 @@ def run_module():
     loadbalancer = sdk.Loadbalancer()
 
     lb = module.params['lb']
-    id = module.params['listener']
-    port = module.params['port']
-    name = module.params['policy']
+    listener = module.params['listener']
+    policy = module.params['policy']
     action = module.params['action']
     priority = module.params['priority']
     rules = module.params['rules']
     target = module.params['target']
     state = module.params["state"]
 
+    check = loadbalancer.get_lb_listener_policy(lb, listener, policy)
+
     if state == "absent":
-        listener = id
-        if port:
-            listener = int(port)
-        result = loadbalancer.delete_policy(lb, listener, name)
+        if "id" in check:
+            result = loadbalancer.delete_policy(lb, listener, policy)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "policy {} doesn't exist in listener {} for load"
-                        " balancer {}".format(name, listener, lb)))
+            payload = {"policy": policy, "listener": listener, "lb": lb,
+                       "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "policy {} successfully deleted from listener {} in load"
-            " balancer {}".format(name, listener, lb)))
+            payload = {"policy": policy, "listener": listener, "lb": lb,
+                       "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        listener = id
-        if port:
-            listener = int(port)
-        check = loadbalancer.get_lb_listener_policy(lb, listener, name)
-
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
@@ -247,16 +223,16 @@ def run_module():
             lb=lb,
             listener=listener,
             action=action,
-            name=name,
+            name=policy,
             priority=priority,
             rules=rules,
             target=target
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
