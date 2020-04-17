@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import subnet as sdk
@@ -12,39 +15,38 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_acl
-short_description: Attach network ACL on subnet.
+short_description: Manage VPC subnet network ACLs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Attach network ACL on subnet on IBM Cloud.
+  - Attach network ACL on subnet on IBM Cloud.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            -  Name that has to be given to the subnet to attach or detach,
-                the network ACL. During the removal an UUID could be used.
-        required: true
-    acl:
-        description:
-            -  Name or ID of the network ACL to attach to the subnet.
-        required: false
-    state:
-        description:
-            - Should the resource be present or attach.
-        required: false
-        choices: [present, attach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Subnet name or ID.
+    type: str
+    required: true
+  acl:
+    description:
+      - Network ACL name or ID.
+    type: str
+    required: true
+  state:
+    description:
+      - Should the resource be present or attach.
+    type: str
+    default: attach
+    choices: [present, attach]
 '''
 
-EXAMPLES = '''
-# Attach network ACL to a subnet
-- ic_is_subnet_acl:
+EXAMPLES = r'''
+- name: Attach network ACL to a subnet
+  ic_is_subnet_acl:
     subnet: ibmcloud-subnet-baby
     acl: ibmcloud-acl-baby
 '''
@@ -57,10 +59,10 @@ def run_module():
             required=True),
         acl=dict(
             type='str',
-            required=False),
+            required=True),
         state=dict(
             type='str',
-            default='present',
+            default='attach',
             choices=['present', 'attach'],
             required=False),
     )
@@ -70,16 +72,20 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params["subnet"]
+    subnet = module.params["subnet"]
     acl = module.params["acl"]
 
-    result = subnet.attach_network_acl(subnet=name,
-                                       network_acl=acl)
+    check = vsi_subnet.get_subnet_network_acl(subnet)
 
+    if "id" in check:
+        module.exit_json(changed=False, msg=check)
+
+    result = vsi_subnet.attach_network_acl(subnet=subnet,
+                                           network_acl=acl)
     if "errors" in result:
-        module.fail_json(msg=result["errors"])
+        module.fail_json(msg=result)
 
     module.exit_json(changed=True, msg=(result))
 
