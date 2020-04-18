@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_acl
-short_description: Manage VPC subnet network ACLs on IBM Cloud.
+short_description: Manage VPC subnet network ACL on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
@@ -87,7 +87,7 @@ def run_module():
     if "errors" in result:
         module.fail_json(msg=result)
 
-    module.exit_json(changed=True, msg=(result))
+    module.exit_json(changed=True, msg=result)
 
 
 def main():
