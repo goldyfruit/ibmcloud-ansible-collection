@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,33 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_info
-short_description: Retrieve information about subnets.
+short_description: Retrieve VPC subnets on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about subnets from IBM Cloud.
+  - This module lists all subnets in the region. Subnets are contiguous ranges
+    of IP addresses specified in CIDR block notation. Each subnet is within a
+    particular zone and cannot span multiple zones or regions.
 notes:
-    - The result contains a list of subnets.
+  - The result contains a list of subnets.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            - Restrict results to subnet with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Restrict results to subnet with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve subnet list
-- ic_is_subnet_info:
+EXAMPLES = r'''
+- name: Retrieve subnet list
+  ic_is_subnet_info:
 
-# Retrieve subnet list and register the value
-- ic_is_subnet_info:
-  register: subnets
-
-# Display subnets registered value
-- debug:
-    var: subnets
-
-# Retrieve a specific subnet by ID or by name
-- ic_is_subnet_info:
+- name: Retrieve a specific subnet
+  ic_is_subnet_info:
     subnet: ibmcloud-subnet-baby
 '''
 
@@ -64,18 +58,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params['subnet']
+    subnet = module.params['subnet']
 
-    if name:
-        result = subnet.get_subnet(name)
+    if subnet:
+        result = vsi_subnet.get_subnet(subnet)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = subnet.get_subnets()
+        result = vsi_subnet.get_subnets()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
