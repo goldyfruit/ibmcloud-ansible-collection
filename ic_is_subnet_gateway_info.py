@@ -31,7 +31,7 @@ requirements:
 options:
   subnet:
     description:
-      - Subnet name or ID .
+      - Subnet name or ID.
     type: str
     required: true
 '''
