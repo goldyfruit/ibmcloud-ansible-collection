@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import subnet as sdk
@@ -12,45 +15,47 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet_gateway
-short_description: Attach or detach public gateway from subnet.
+short_description: Manage VPC subnet public gateway on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Attach or detach public gateway from subnet on IBM Cloud.
+  - This module attaches the public gateway, specified in the request body,
+    to the subnet specified by the subnet identifier in the URL. The public
+    gateway must have the same VPC and zone as the subnet.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            -  Name that has to be given to the subnet to attach or detach,
-                the public gateway. During the removal an UUID could be used.
-        required: true
-    gateway:
-        description:
-            -  Name or ID of the public gateway to attach to the subnet.
-        required: false
-    state:
-        description:
-            - Should the resource be present, absent, attach or detach.
-        required: false
-        choices: [present, absent, attach, detach]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Subnet name or ID.
+    type: str
+    required: true
+  gateway:
+    description:
+      - Public gateway name or ID.
+    type: str
+    required: true
+  state:
+    description:
+      - Should the resource be present, absent, attach or detach.
+    type: str
+    default: attach
+    choices: [present, absent, attach, detach]
 '''
 
-EXAMPLES = '''
-# Attach public gateway to a subnet
-- ic_is_subnet_gateway:
+EXAMPLES = r'''
+- name: Attach public gateway to a subnet
+  ic_is_subnet_gateway:
     subnet: ibmcloud-subnet-baby
-    gateway: ibmcloud-gateway-baby
+    gateway: ibmcloud-public-gateway-baby
 
-# Detach public gateway to from a subnet
-- ic_is_subnet_gateway:
+- name: Detach public gateway from a subnet
+  ic_is_subnet_gateway:
     subnet: ibmcloud-subnet-baby
+    gateway: ibmcloud-public-gateway-baby
     state: absent
 '''
 
@@ -62,10 +67,10 @@ def run_module():
             required=True),
         gateway=dict(
             type='str',
-            required=False),
+            required=True),
         state=dict(
             type='str',
-            default='present',
+            default='attach',
             choices=['absent', 'present', 'attach', 'detach'],
             required=False),
     )
@@ -75,44 +80,39 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params["subnet"]
+    subnet = module.params["subnet"]
     gateway = module.params["gateway"]
     state = module.params["state"]
 
+    check = vsi_subnet.get_subnet_public_gateway(subnet)
+
     if state == "absent" or state == "detach":
-        result = subnet.detach_public_gateway(name)
+        if "id" in check:
+            result = vsi_subnet.detach_public_gateway(subnet)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "subnet {} doesn't exist")).format(name)
+            payload = {"public_gateway": gateway, "subnet": subnet,
+                       "status": "detached"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "public gateway successfully detached from subnet {}")).format(
-                name)
-
+        payload = {"public_gateway": gateway, "subnet": subnet,
+                   "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
-        result = subnet.attach_public_gateway(subnet=name,
-                                              public_gateway=gateway)
-
+        result = vsi_subnet.attach_public_gateway(
+            subnet=subnet,
+            public_gateway=gateway
+        )
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = subnet.get_subnet_public_gateway(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
