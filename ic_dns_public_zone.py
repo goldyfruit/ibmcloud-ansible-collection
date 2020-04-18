@@ -23,7 +23,7 @@ description:
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    dns_zone:
+    zone:
         description:
             -  Name that has to be given to the DNS to create or delete.
                 During the removal an UUID could be used.
@@ -86,32 +86,36 @@ def run_module():
 
     dns = sdk.Dns()
     
-    dns_zone = module.params['zone']
+    zone = module.params['zone']
     check_availability = module.params["check_availability"]
     state = module.params['state']
 
     if state == "absent":
-        zone = dns.get_zone_id(dns_zone)
-        if "errors" in zone:
-            for key in zone["errors"]:
-                if key["code"] != "not_found":
-                    module.exit_json(changed=False, msg=(
-                        "zone {} doesn't exist")).format(dns_zone)
-        result = dns.delete_zone(dns_zone)
-        if result is True:
+        zone_id = dns.get_zone_id(zone)
+        if not isinstance(zone_id, int):
+            if "errors" in zone_id:
+                for key in zone_id["errors"]:
+                    if key["code"] == "not_found":
+                        module.exit_json(changed=False, msg=(
+                            "zone {} doesn't exist").format(zone))
+        result = dns.delete_zone(zone)
+        if result is None:
             module.exit_json(changed=True, msg=(
-                "zone {} successfully deleted").format(dns_zone))
+                "zone {} successfully deleted").format(zone))
 
     else:
-        #if unique: 
-        #    _check_zone(module)
-        # TODO: improve creation   
-        result = dns.create_zone(dns_zone=dns_zone)
-
-        if "errors" in result:
-            module.fail_json(msg=esult["errors"])
-        else:
-            module.exit_json(changed=True, msg=(result))
+        zone_id = dns.get_zone_id(zone)
+        if not isinstance(zone_id, int):
+            if "errors" in zone_id:
+                for key in zone_id["errors"]:
+                    if key["code"] == "not_found":
+                        result = dns.create_zone(zone)
+                        if result:
+                            module.exit_json(changed=True, msg=(
+                                "zone {} successfully created".format(zone)))
+                        module.fail_json(changed=False, msg=(
+                            "errot while creating zone {}")).format(zone)
+        module.exit_json(changed=False, msg=("zone {} already exists".format(zone)))
 
 
 def main():
