@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -13,41 +15,33 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_volume_info
-short_description: Retrieve information about volumes.
+short_description: Retrieve VPC volumes on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about volume from IBM Cloud.
+  - This module lists all volume profiles available in the region. A volume
+    profile specifies the performance characteristics and pricing model for
+    a volume.
 notes:
-    - The result contains a list of volumes.
+  - The result contains a list of volumes.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    volume:
-        description:
-            - Restrict results to volume with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  volume:
+    description:
+      - Restrict results to volume with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve volume list
-- ic_is_volume_info:
+EXAMPLES = r'''
+- name: Retrieve volume list
+  ic_is_volume_info:
 
-# Retrieve volume list and register the value
-- ic_is_volume_info:
-  register: volumes
-
-# Display volumes registered value
-- debug:
-    var: volumes
-
-# Retrieve a specific volume by ID or by name
-- ic_is_volume_info:
+- name: Retrieve specific volume
+  ic_is_volume_info:
     volume: ibmcloud-volume-baby
 '''
 
@@ -64,18 +58,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    volume = sdk.Volume()
+    vpc_volume = sdk.Volume()
 
-    name = module.params['volume']
+    volume = module.params['volume']
 
-    if name:
-        result = volume.get_volume(name)
+    if volume:
+        result = vpc_volume.get_volume(volume)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
-        result = volume.get_volumes()
+        result = vpc_volume.get_volumes()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
