@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import subnet as sdk
@@ -12,77 +15,95 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_subnet
-short_description: Create or delete network subnet.
+short_description: Manage VPC subnets on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete network subnet on IBM Cloud.
+  - This module creates a new subnet from a subnet prototype object.
+    The prototype object is structured in the same way as a retrieved subnet,
+    and contains the information necessary to create the new subnet. For this
+    request to succeed, the prototype's CIDR block must not overlap with an
+    existing subnet in the VPC.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    subnet:
-        description:
-            -  Name that has to be given to the subnet to create or delete.
-                During the removal an UUID could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the subnet has to
-               be created.
-        required: false
-    ip_version:
-        description:
-            -  The IP version(s) supported by this subnet.
-        required: false
-        choices: [both, ipv4, ipv6]
-    ipv4_cidr_block:
-        description:
-            -  The IPv4 range of the subnet, expressed in CIDR format.
-        required: false
-    network_acl:
-        description:
-            -  The network ACL to use for this subnet.
-        required: false
-    public_gateway:
-        description:
-            -  The public gateway to handle internet bound traffic for this
-                subnet.
-        required: false
-    total_ipv4_address_count:
-        description:
-            -  The total number of IPv4 addresses required.
-        required: false
-    zone:
-        description:
-            -  The location of the subnet.
-        required: false
-    vpc:
-        description:
-            -  The VPC the subnet is to be a part of.
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  subnet:
+    description:
+      - Subnet name or ID.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  ip_version:
+    description:
+      - The IP version(s) supported by this subnet; if unspecified, ipv4 is
+        used.
+    type: str
+    choices: [both, ipv4, ipv6]
+  ipv4_cidr_block:
+    description:
+      - The IPv4 range of the subnet, expressed in CIDR format. The prefix
+        length of the subnet's CIDR must be between 8 and 29. The IPv4 range
+        of the subnet's CIDR must fall within an existing address prefix in
+        the VPC. The subnet will be created in the zone of the address prefix
+        that contains the IPv4 CIDR. If zone is specified, it must match the
+        zone of the address prefix that contains the subnet's IPv4 CIDR.
+    type: str
+  network_acl:
+    description:
+      - The network ACL to use for this subnet; if unspecified, the default
+        network ACL for the VPC is used.
+    type: str
+  public_gateway:
+    description:
+      - The public gateway to handle internet bound traffic for this subnet.
+    type: str
+  routing_table
+    description:
+      - The routing table to use for this subnet; if unspecified, the default
+        routing table for the VPC is used.
+    type: str
+  total_ipv4_address_count:
+    description:
+      - The total number of IPv4 addresses required. Must be a power of 2.
+        The VPC must have a default address prefix in the specified zone, and
+        that prefix must have a free CIDR range with at least this number of
+        addresses.
+    type: int
+  zone:
+    description:
+      - The zone the subnet is to reside in.
+    type: str
+  vpc:
+    description:
+      - The VPC the subnet is to be a part of.
+    type: str
+    required: true
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create subnet
-- ic_is_subnet:
+EXAMPLES = r'''
+- name: Create subnet
+  ic_is_subnet:
     subnet: ibmcloud-subnet-baby
     vpc: ibmcloud-vpc-baby
     ipv4_cidr_block: 192.168.10.0/24
 
-# Delete subnet
-- ic_is_subnet:
+- name: Delete subnet
+  ic_is_subnet:
     subnet: ibmcloud-volume-baby
+    vpc: ibmcloud-vpc-baby
     state: absent
 '''
 
@@ -108,6 +129,9 @@ def run_module():
         public_gateway=dict(
             type='str',
             required=False),
+        routing_table=dict(
+            type='str',
+            required=False),
         total_ipv4_address_count=dict(
             type='int',
             required=False),
@@ -116,7 +140,7 @@ def run_module():
             required=False),
         vpc=dict(
             type='str',
-            required=False),
+            required=True),
         state=dict(
             type='str',
             default='present',
@@ -129,9 +153,9 @@ def run_module():
         supports_check_mode=False
     )
 
-    subnet = sdk.Subnet()
+    vsi_subnet = sdk.Subnet()
 
-    name = module.params["subnet"]
+    subnet = module.params["subnet"]
     resource_group = module.params["resource_group"]
     ip_version = module.params["ip_version"]
     ipv4_cidr_block = module.params["ipv4_cidr_block"]
@@ -142,28 +166,28 @@ def run_module():
     vpc = module.params["vpc"]
     state = module.params["state"]
 
+    check = vsi_subnet.get_subnet(subnet)
+
     if state == "absent":
-        result = subnet.delete_subnet(name)
+        if "id" in check:
+            result = vsi_subnet.delete_subnet(check)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "subnet {} doesn't exist")).format(name)
+            payload = {"subnet": subnet, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "subnet {} successfully deleted")).format(name)
-
+        payload = {"subnet": subnet, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
         if total_ipv4_address_count and not zone:
-            module.fail_json(msg="when using total_ipv4_address_count option,"
-                                 " zone option should be set too.")
+            module.fail_json(msg="total_ipv4_address_count needs zone option")
 
-        result = subnet.create_subnet(
-            name=name,
+        result = vsi_subnet.create_subnet(
+            name=subnet,
             resource_group=resource_group,
             ip_version=ip_version,
             ipv4_cidr_block=ipv4_cidr_block,
@@ -171,20 +195,13 @@ def run_module():
             public_gateway=public_gateway,
             total_ipv4_address_count=total_ipv4_address_count,
             zone=zone,
-            vpc=vpc)
+            vpc=vpc
+        )
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = subnet.get_subnet(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
