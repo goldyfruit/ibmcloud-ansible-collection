@@ -114,7 +114,7 @@ EXAMPLES = r'''
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     ipsec_policy: ibmcloud-vpn-ipsec-baby
-    ike_policy: ibmcloud-vpn-ike--baby
+    ike_policy: ibmcloud-vpn-ike-baby
     dead_peer_detection:
       action: restart
       interval: 2
