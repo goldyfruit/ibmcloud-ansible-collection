@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_gateway
-short_description: Create or delete VPN gateway.
+short_description: Manage VPC VPN gateways on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
