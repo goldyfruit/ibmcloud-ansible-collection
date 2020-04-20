@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import vpn as sdk
@@ -16,11 +18,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_connection
-short_description: Create or delete VPN connection.
+short_description: Manage VPC VPN connections on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete VPN connection for specific gateway on IBM Cloud.
+  - This module creates a new VPN connection on a specific VPN gateway.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -91,13 +93,13 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create VPN connection with IKE and IPsec auto-negotiation
-- ic_is_vpn_connection:
+- name: Create VPN connection with IKE and IPsec auto-negotiation
+  ic_is_vpn_connection:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     local_cidrs:
@@ -107,12 +109,12 @@ EXAMPLES = r'''
       - 10.0.0.0/24
     psk: "@!Il0v3IBMCl0udB4by!@"
 
-# Create VPN connection with custom policies and dead peer configuration
-- ic_is_vpn_connection:
+- name: Create VPN connection with custom policies and dead peer configuration
+  ic_is_vpn_connection:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     ipsec_policy: ibmcloud-vpn-ipsec-baby
-    ike_policy: ibmcloud-vpn-ike-policy
+    ike_policy: ibmcloud-vpn-ike--baby
     dead_peer_detection:
       action: restart
       interval: 2
@@ -124,8 +126,8 @@ EXAMPLES = r'''
       - 10.0.0.0/24
     psk: "@!Il0v3IBMCl0udB4by!@"
 
-# Delete VPN connection
-- ic_is_vpn_connection:
+- name: Delete VPN connection
+  ic_is_vpn_connection:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     state: absent
@@ -196,7 +198,7 @@ def run_module():
     vpn = sdk.Vpn()
 
     gateway = module.params['gateway']
-    name = module.params['connection']
+    connection = module.params['connection']
     admin_state_up = module.params['admin_state_up']
     dead_peer_detection = module.params['dead_peer_detection']
     ike_policy = module.params['ike_policy']
@@ -207,29 +209,28 @@ def run_module():
     psk = module.params['psk']
     state = module.params["state"]
 
+    check = vpn.get_vpn_gateway_connection(gateway, connection)
+
     if state == "absent":
-        result = vpn.delete_connection(gateway, name)
+        if "id" in check:
+            result = vpn.delete_connection(gateway, connection)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "connection {} doesn't exist in gateway {}".format(
-                          name, gateway)))
+            payload = {"connection": connection, "gateway": gateway,
+                       "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "connection {} successfully deleted in gateway {}".format(
-              name, gateway)))
+        payload = {"connection": connection, "gateway": gateway,
+                   "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        check = vpn.get_vpn_gateway_connection(gateway, name)
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
         result = vpn.create_connection(
             gateway=gateway,
-            name=name,
+            name=connection,
             admin_state_up=admin_state_up,
             dead_peer_detection=dead_peer_detection,
             ike_policy=ike_policy,
@@ -241,7 +242,7 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=result)
 
