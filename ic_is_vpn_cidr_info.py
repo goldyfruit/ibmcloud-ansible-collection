@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -17,14 +18,14 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_cidr_info
-short_description: Retrieve information about local/peer CIDRs.
+short_description: Retrieve VPC VPN local or peer CIDRs on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Retrieve information about VPN connection's local/peer CIDRs
-    from IBM Cloud.
+  - This module lists all local or peer CIDRs for the resource specified by
+    the identifier in the URL.
 notes:
-  - The result contains a list of local/peer CIDRs.
+  - The result contains a list of local or peer CIDRs.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -54,31 +55,20 @@ options:
 '''
 
 EXAMPLES = r'''
-# Retrieve peer CIDR list
-- ic_is_vpn_cidr_info:
+- name: Retrieve peer CIDR list
+  ic_is_vpn_cidr_info:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     target: peer
 
-# Retrieve local CIDR list
-- ic_is_vpn_cidr_info:
+- name: Retrieve local CIDR list
+  ic_is_vpn_cidr_info:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     target: local
 
-# Retrieve peer CIDR list and register the value
-- ic_is_vpn_cidr_info:
-    gateway: ibmcloud-vpn-gateway-baby
-    connection: ibmcloud-vpn-connection-baby
-    target: peer
-  register: cidrs
-
-# Display cidrs registered value
-- debug:
-    var: cidrs
-
-# Retrieve specific peer CIDR
-- ic_is_vpn_cidr_info:
+- name Retrieve specific peer CIDR
+  ic_is_vpn_cidr_info:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
     target: peer
@@ -113,35 +103,36 @@ def run_module():
     gateway = module.params['gateway']
     connection = module.params['connection']
     target = module.params['target']
-    name = module.params['cidr']
+    cidr = module.params['cidr']
 
     # Split CIDR to get address and length
-    if name:
-        prefix_address = name.split('/')[0]
-        prefix_length = name.split('/')[1]
+    if cidr:
+        prefix_address = cidr.split('/')[0]
+        prefix_length = cidr.split('/')[1]
 
     if target == "local":
-        if name:
+        if cidr:
             result = vpn.check_vpn_gateway_local_cidr(
               gateway, connection, prefix_address, prefix_length)
             if result and "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
         else:
             result = vpn.get_vpn_gateway_local_cidrs(gateway, connection)
             if "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
     else:
-        if name:
+        if cidr:
             result = vpn.check_vpn_gateway_peer_cidr(
               gateway, connection, prefix_address, prefix_length)
             if result and "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
         else:
             result = vpn.get_vpn_gateway_peer_cidrs(gateway, connection)
             if "errors" in result:
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=result)
 
-    module.exit_json(change=False, msg="cidr has been found.".format(name))
+    payload = {"cidr": cidr, "target": target, "status": "found"}
+    module.exit_json(change=False, msg=payload)
 
 
 def main():
