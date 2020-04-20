@@ -59,12 +59,12 @@ options:
 EXAMPLES = r'''
 - name: Create SSH key
   ic_is_key:
-    name: ibmcloud-key-baby
+    key: ibmcloud-key-baby
     public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChXZYzE545Uc5PU...
 
 - name: Delete SSH key
   ic_is_key:
-    name: ibmcloud-key-baby
+    key: ibmcloud-key-baby
     state: absent
 '''
 
