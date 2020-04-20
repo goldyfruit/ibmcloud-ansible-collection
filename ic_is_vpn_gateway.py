@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import vpn as sdk
@@ -20,7 +22,7 @@ short_description: Create or delete VPN gateway.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete VPN gateway on IBM Cloud.
+  - This module creates a new VPN gateway.
 requirements:
   - "ibmcloud-python-sdk"
 options:
@@ -41,17 +43,17 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create VPN gateway
-- ic_is_vpn_gateway:
-    gateway: ibmcloud-vpn-ike-baby
+- name: Create VPN gateway
+  ic_is_vpn_gateway:
+    gateway: ibmcloud-vpn-gateway-baby
     subnet: ibmcloud-subnet-baby
 
-# Delete VPN gateway
+- name: Delete VPN gateway
 - ic_is_vpn_gateway:
     gateway: ibmcloud-vpn-gateway-baby
     state: absent
@@ -83,37 +85,36 @@ def run_module():
 
     vpn = sdk.Vpn()
 
-    name = module.params['gateway']
+    gateway = module.params['gateway']
     subnet = module.params['subnet']
     resource_group = module.params['resource_group']
     state = module.params["state"]
 
+    check = vpn.get_vpn_gateway(gateway)
+
     if state == "absent":
-        result = vpn.delete_gateway(name)
+        if "id" in check:
+            result = vpn.delete_gateway(gateway)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "gateway {} doesn't exist".format(name)))
+            payload = {"gateway": gateway, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "gateway {} successfully deleted".format(name)))
+        payload = {"gateway": gateway, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        check = vpn.get_vpn_gateway(name)
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
         result = vpn.create_gateway(
-            name=name,
+            name=gateway,
             subnet=subnet,
             resource_group=resource_group,
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
         module.exit_json(changed=True, msg=result)
 
