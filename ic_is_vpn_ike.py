@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import vpn as sdk
@@ -16,39 +18,39 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_ike
-short_description: Create or delete VPN IKE policy.
+short_description: Manage VPC VPN IKE policies on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Create or delete VPN IKE policy on IBM Cloud.
+  - This module creates a new IPsec policy.
 requirements:
   - "ibmcloud-python-sdk"
 options:
   policy:
     description:
-      - The user-defined name for this IKE policy
+      - The user-defined name for this IKE policy.
     type: str
     required: true
   authentication_algorithm:
     description:
       - The authentication algorithm.
     type: str
-    choices: [ md5, sha1, sha256 ]
+    choices: [md5, sha1, sha256]
   dh_group:
     description:
       - The Diffie-Hellman group.
     type: int
-    choices: [ 2, 5, 14 ]
+    choices: [2, 5, 14]
   encryption_algorithm:
     description:
       - The encryption algorithm.
     type: str
-    choices: [ triple_des, aes128, aes256 ]
+    choices: [triple_des, aes128, aes256]
   ike_version:
     description:
       - The IKE protocol version.
     type: int
-    choices: [ 1, 2 ]
+    choices: [1, 2]
   key_lifetime:
     description:
       - The key lifetime in seconds.
@@ -61,13 +63,13 @@ options:
     description:
       - Should the resource be present or absent.
     type: str
-    choices: [present, absent]
     default: present
+    choices: [present, absent]
 '''
 
 EXAMPLES = r'''
-# Create VPN IKE v2 policy
-- ic_is_vpn_ike:
+- name: Create VPN IKE policy
+  ic_is_vpn_ike:
     policy: ibmcloud-vpn-ike-baby
     authentication_algorithm: sha256
     dh_group: 2
@@ -75,8 +77,8 @@ EXAMPLES = r'''
     ike_version: 2
     key_lifetime: 28800
 
-# Delete VPN IKE policy
-- ic_is_vpn_ike:
+- name: Delete VPN IKE policy
+  ic_is_vpn_ike:
     policy: ibmcloud-vpn-ike-baby
     state: absent
 '''
@@ -123,7 +125,7 @@ def run_module():
 
     vpn = sdk.Vpn()
 
-    name = module.params['policy']
+    policy = module.params['policy']
     authentication_algorithm = module.params['authentication_algorithm']
     dh_group = module.params['dh_group']
     encryption_algorithm = module.params['encryption_algorithm']
@@ -132,26 +134,25 @@ def run_module():
     resource_group = module.params['resource_group']
     state = module.params["state"]
 
+    check = vpn.get_ike_policy(policy)
+
     if state == "absent":
-        result = vpn.delete_ike_policy(name)
+        if "id" in check:
+            result = vpn.delete_ike_policy(policy)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "policy {} doesn't exist".format(name)))
+            payload = {"policy": policy, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
-        module.exit_json(changed=True, msg=(
-            "policy {} successfully deleted".format(name)))
+        payload = {"policy": policy, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        check = vpn.get_ike_policy(name)
         if "id" in check:
             module.exit_json(changed=False, msg=(check))
 
         result = vpn.create_ike_policy(
-            name=name,
+            name=policy,
             authentication_algorithm=authentication_algorithm,
             dh_group=dh_group,
             encryption_algorithm=encryption_algorithm,
@@ -161,9 +162,9 @@ def run_module():
         )
 
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
