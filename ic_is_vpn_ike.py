@@ -22,7 +22,7 @@ short_description: Manage VPC VPN IKE policies on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - This module creates a new IPsec policy.
+  - This module creates a new IKE policy.
 requirements:
   - "ibmcloud-python-sdk"
 options:
