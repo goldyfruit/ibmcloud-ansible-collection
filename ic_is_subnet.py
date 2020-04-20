@@ -170,7 +170,7 @@ def run_module():
 
     if state == "absent":
         if "id" in check:
-            result = vsi_subnet.delete_subnet(check)
+            result = vsi_subnet.delete_subnet(subnet)
             if "errors" in result:
                 module.fail_json(msg=result)
 
