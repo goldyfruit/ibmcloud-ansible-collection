@@ -146,7 +146,6 @@ options:
     description:
       - Primary network interface.
     type: dict
-    required: true
     suboptions:
       ips:
         description:
@@ -177,7 +176,6 @@ options:
     description:
       - The profile to use for this virtual server instance.
     type: str
-    required: true
   resource_group:
     description:
       - The resource group to use. If unspecified, the account's default
@@ -199,17 +197,10 @@ options:
       - The identity of the image to be used when provisioning the virtual
         server instance.
     type: str
-    required: true
-  pni_subnet:
-    description:
-      - Name or UUID of associated subnet where the virtual instance
-        will be part of, "PNI" stands for Primary Network Instance.
-    required: true
   zone:
     description:
       - The identity of the zone to provision the virtual server instance in.
     type: str
-    required: true
   state:
     description:
       - Should the resource be present or absent.
@@ -219,31 +210,30 @@ options:
 '''
 
 EXAMPLES = r'''
-# Create instance (VSI)
-- ic_is_instance:
-    instance: ibmcloud-vsi
+- name: Create VSI
+  ic_is_instance:
+    instance: ibmcloud-vsi-baby
     keys:
-      - ibmcloud-ssh-key
-    profile: mp2-56x448
-    image: ibm-redhat-7-6-minimal-amd64-1
-    pni_subnet: advisory-subnet
-    zone: us-south-3
+      - ibmcloud-key1-baby
+      - ibmcloud-key2-baby
+    profile: ibmcloud-vsi-profile-baby
+    vpc: ibmcloud-vpc-baby
+    image: ibmcloud-image-baby
+    primary_network_interface:
+      name: ibmcloud-vsi-nic-baby
+      subnet: ibmcloud-subnet-baby
+    boot_volume_attachment:
+      name: ibmcloud-boot-vol-attachment-baby
+      volume:
+        name: ibmcloud-boot-vol-baby
+        capacity: 50
+        profile: ibmcloud-volume-profile-baby
+    zone: ibmcloud-zone-baby
 
-# Create instance within a specific VPC
-- ic_is_instance:
-    instance: ibmcloud-vsi
-    keys:
-      - ibmcloud-ssh-key
-    profile: mp2-56x448
-    resource_group: advisory
-    vpc: advisory
-    image: ibm-redhat-7-6-minimal-amd64-1
-    pni_subnet: advisory-subnet
-    zone: us-south-3
 
-# Delete instance
-- ic_is_instance:
-    instance: ibmcloud-vsi
+- name: Delete instance
+  ic_is_instance:
+    instance: ibmcloud-vsi-baby
     state: absent
 '''
 
@@ -285,7 +275,7 @@ def run_module():
             required=False),
         profile=dict(
             type='str',
-            required=True),
+            required=False),
         resource_group=dict(
             type='str',
             required=False),
@@ -347,7 +337,7 @@ def run_module():
             required=False),
         image=dict(
             type='str',
-            required=True),
+            required=False),
         primary_network_interface=dict(
             type='dict',
             options=dict(
@@ -367,10 +357,10 @@ def run_module():
                     type='str',
                     required=True),
             ),
-            required=True),
+            required=False),
         zone=dict(
             type='str',
-            required=True),
+            required=False),
         state=dict(
             type='str',
             default='present',
