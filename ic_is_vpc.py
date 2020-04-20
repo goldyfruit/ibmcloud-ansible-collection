@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import vpc as sdk
@@ -12,67 +15,68 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_vpc
-short_description: Create or delete VPC (Virtual Private Cloud).
+short_description: Manage VPC (Virtual Private Cloud) on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete VPC (Virtual Private Cloud) on IBM Cloud.
+  - This module  creates a new VPC from a VPC prototype object. The prototype
+    object is structured in the same way as a retrieved VPC, and contains the
+    information necessary to create the new VPC.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    vpc:
-        description:
-            -  Name that has to be given to the VPC to create or delete.
-                During the removal an UUID could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the VPC has to
-               be created.
-        required: false
-    address_prefix_management:
-        description:
-            -  Indicates whether a default address prefix should be
-               automatically created for each zone in this VPC.
-        required: false
-        choices: [auto, manual]
-        default: auto
-    classic_access:
-        description:
-            -  Indicates whether this VPC should be connected to Classic
-               Infrastructure.
-        required: false
-        choices: [true, false]
-        default: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  vpc:
+    description:
+      - The unique user-defined name for this VPC.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  address_prefix_management:
+    description:
+      - Indicates whether a default address prefix should be automatically
+        created for each zone in this VPC. If manual, this VPC will be
+        created with no default address prefixes.
+    type: str
+    default: auto
+    choices: [auto, manual]
+  classic_access:
+    description:
+      - Indicates whether this VPC should be connected to Classic
+        Infrastructure. If true, this VPC's resources will have private
+        network connectivity to the account's Classic Infrastructure resources.
+      - Only one VPC, per region, may be connected in this way. This value is
+        set at creation and subsequently immutable.
+    type: bool
+    default: false
+    choices: [true, false]
+  state:
+    description:
+      - Should the resource be present or absent.
+    type: str
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create VPC
-- ic_is_vpc:
+EXAMPLES = r'''
+- name: Create VPC
+  ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resource_group: ibmcloud-rg-baby
 
-# Create VPC without address prefix
-- ic_is_vpc:
+- name: Create VPC without default address prefixes
+  ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resource_group: ibmcloud-rg-baby
-    address_prefix_management: true
+    address_prefix_management: manual
 
-# Delete VPC
-- ic_is_vpc:
+- name: Delete VPC
+  ic_is_vpc:
     vpc: ibmcloud-vpc-baby
-    resource_group: ibmcloud-rg-baby
     state: absent
 '''
 
@@ -92,7 +96,7 @@ def run_module():
             required=False),
         classic_access=dict(
             type='bool',
-            default='false',
+            default=False,
             choices=[True, False],
             required=False),
         state=dict(
@@ -115,38 +119,32 @@ def run_module():
     classic_access = module.params['classic_access']
     state = module.params['state']
 
-    if state == "absent":
-        result = vpc.delete_vpc(name)
+    check = vpc.get_vpc(name)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "vpc {} doesn't exist")).format(name)
+    if "id" in check:
+        if state == "absent":
+            result = vpc.delete_vpc(name)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(
-            "vpc {} successfully deleted")).format(name)
+            payload = {"vpc": name, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
+        payload = {"vpc": name, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
+
         result = vpc.create_vpc(name=name,
                                 resource_group=resource_group,
                                 address_prefix_management=address_prefix_mgmt,
                                 classic_access=classic_access)
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "validation_unique_failed":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = vpc.get_vpc(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
