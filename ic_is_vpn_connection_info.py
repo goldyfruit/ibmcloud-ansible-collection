@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -16,11 +18,11 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_connection_info
-short_description: Retrieve information about VPN connection.
+short_description: Retrieve VPC VPN connections IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Retrieve information about VPN connection from IBM Cloud.
+  - This module lists all the connections of a particular VPN gateway.
 notes:
   - The result contains a list of connections.
 requirements:
@@ -29,27 +31,21 @@ options:
   gateway:
     description:
       - VPN gateway ID or name.
+    type: str
+    required: true
   connection:
     description:
       - Restrict results to VPN connection with ID or name matching.
+    type: str
 '''
 
 EXAMPLES = r'''
-# Retrieve VPN connection list
-- ic_is_vpn_connection_info:
+- name: Retrieve VPN connection list
+  ic_is_vpn_connection_info:
     gateway: ibmcloud-vpn-gateway-baby
 
-# Retrieve VPN connection list and register the value
-- ic_is_vpn_connection_info:
-    gateway: ibmcloud-vpn-gateway-baby
-  register: connections
-
-# Display connections registered value
-- debug:
-    var: connections
-
-# Retrieve a specific VPN connection
-- ic_is_vpn_connection_info:
+- name: Retrieve a specific VPN connection
+  ic_is_vpn_connection_info:
     gateway: ibmcloud-vpn-gateway-baby
     connection: ibmcloud-vpn-connection-baby
 '''
@@ -73,16 +69,16 @@ def run_module():
     vpn = sdk.Vpn()
 
     gateway = module.params['gateway']
-    name = module.params['connection']
+    connection = module.params['connection']
 
-    if name:
-        result = vpn.get_vpn_gateway_connection(gateway, name)
+    if connection:
+        result = vpn.get_vpn_gateway_connection(gateway, connection)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = vpn.get_vpn_gateway_connections(gateway)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
