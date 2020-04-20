@@ -51,7 +51,7 @@ EXAMPLES = r'''
     account_id: 9aa205e454574e8484b3ca8c2ff33d83
 
 - name: Delete resource group
-  ic_is_key:
+  ic_is_resource_group:
     group: ibmcloud-resource-group-new-baby
     account_id: 9aa205e454574e8484b3ca8c2ff33d83
     state: absent
