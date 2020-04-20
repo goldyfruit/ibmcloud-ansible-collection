@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -16,11 +18,12 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_ike_info
-short_description: Retrieve information about VPN IKE policy.
+short_description: Retrieve VPC VPN IKE policies IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Retrieve information about VPN IKE policies from IBM Cloud.
+  - This module retrieves a paginated list of all IKE policies that belong
+    to this account.
 notes:
   - The result contains a list of policies.
 requirements:
@@ -29,23 +32,16 @@ options:
   policy:
     description:
       - Restrict results to VPN IKE policy with ID or name matching.
+    type: str
 '''
 
 EXAMPLES = r'''
-# Retrieve VPN IKE policy list
-- ic_is_vpn_ike_info:
+- name: Retrieve VPN IKE policy list
+  ic_is_vpn_ike_info:
 
-# Retrieve VPN IKE policy list and register the value
-- ic_is_vpn_ike_info:
-  register: policies
-
-# Display VPN IKE policies registered value
-- debug:
-    var: policies
-
-# Retrieve a specific VPN IKE policy
-- ic_is_vpn_ike_info:
-    policy: ibmcloud-vpn-ike-policy-baby
+- name: Retrieve a specific VPN IKE policy
+  ic_is_vpn_ike_info:
+    policy: ibmcloud-vpn-ike-baby
 '''
 
 
@@ -63,16 +59,16 @@ def run_module():
 
     vpn = sdk.Vpn()
 
-    name = module.params['policy']
+    policy = module.params['policy']
 
-    if name:
-        result = vpn.get_ike_policy(name)
+    if policy:
+        result = vpn.get_ike_policy(policy)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = vpn.get_ike_policies()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
