@@ -149,7 +149,7 @@ def run_module():
         module.exit_json(changed=False, msg=payload)
     else:
         if "id" in check:
-            module.exit_json(changed=False, msg=(check))
+            module.exit_json(changed=False, msg=check)
 
         result = vpn.create_ike_policy(
             name=policy,
