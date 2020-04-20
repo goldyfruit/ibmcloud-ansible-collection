@@ -127,8 +127,7 @@ EXAMPLES = r'''
     group: ibmcloud-sec-group-baby
     vpc: ibmcloud-vpc-baby
     rules:
-      - name: ssh
-        direction: inbound
+      - direction: inbound
         protocol: tcp
         port_min: 22
         port_max: 22
