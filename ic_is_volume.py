@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
 from ibmcloud_python_sdk.vpc import volume as sdk
@@ -12,69 +15,69 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_volume
-short_description: Create or delete volume.
+short_description: Manage VPC volumes on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Create or delete volume on IBM Cloud.
+  - This module creates a new volume from a volume prototype object. The
+    prototype object is structured in the same way as a retrieved volume,
+    and contains the information necessary to create the new volume.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    volume:
-        description:
-            -  Name that has to be given to the volume to create or delete.
-                During the removal an UUID could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the volume has to
-               be created.
-        required: false
-    iops:
-        description:
-            -  The bandwidth for the volume.
-        required: false
-    capacity:
-        description:
-            -  The capacity of the volume in gigabytes.
-        required: false
-    profile:
-        description:
-            -  The profile to use for this volume.
-        required: false
-    zone:
-        description:
-            -  The location of the volume.
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  volume:
+    description:
+      - The unique user-defined name for this volume.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - The resource group to use. If unspecified, the account's default
+        resource group is used.
+    type: str
+  encryption_key:
+    description:
+      - The key to use for encrypting this volume. If no encryption key is
+        provided, the volume's encryption will be provider-managed.
+    type: str
+  iops:
+    description:
+      - The bandwidth for the volume.
+    type: int
+  capacity:
+    description:
+      - The capacity of the volume in gigabytes.
+    type: int
+  profile:
+    description:
+      - The profile to use for this volume.
+    type: str
+  zone:
+    description:
+      - The location of the volume.
+    type: str
+  state:
+    description:
+      - Should the resource be present or absent.
+  type: str
+  default: present
+  choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create volume
-- ic_is_volume:
+EXAMPLES = r'''
+- name: Create volume
+  ic_is_volume:
     volume: ibmcloud-volume-baby
-    resource_group: advisory
+    profile: ibmcloud-volume-profile-baby
+    capacity: 100
+    zone: ibmcloud-zone-baby
 
-# Create volume without address prefix
-- ic_is_volume:
+- name: Delete volume
+  ic_is_volume:
     volume: ibmcloud-volume-baby
-    resource_group: advisory
-    address_prefix_management: true
-
-# Delete volume
-- ic_is_volume:
-    volume: ibmcloud-volume-baby
-    resource_group: advisory
     state: absent
 '''
 
@@ -99,6 +102,9 @@ def run_module():
         zone=dict(
             type='str',
             required=False),
+        encryption_key=dict(
+            type='str',
+            required=False),
         state=dict(
             type='str',
             default='present',
@@ -111,50 +117,48 @@ def run_module():
         supports_check_mode=False
     )
 
-    volume = sdk.Volume()
+    vpc_volume = sdk.Volume()
 
-    name = module.params["volume"]
+    volume = module.params["volume"]
     resource_group = module.params["resource_group"]
     iops = module.params["iops"]
     capacity = module.params["capacity"]
     profile = module.params["profile"]
     zone = module.params["zone"]
+    encryption_key = module.params["encryption_key"]
     state = module.params["state"]
 
-    if state == "absent":
-        result = volume.delete_volume(name)
+    check = vpc_volume.get_volume(volume)
 
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "volume {} doesn't exist")).format(name)
+    if "id" in check:
+        if state == "absent":
+            result = vpc_volume.delete_volume(volume)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(
-            "volume {} successfully deleted")).format(name)
+            payload = {"volume": volume, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
 
+        payload = {"volume": volume, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        result = volume.create_volume(name=name,
-                                      resource_group=resource_group,
-                                      iops=iops,
-                                      capacity=capacity,
-                                      profile=profile,
-                                      zone=zone)
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
+
+        result = vpc_volume.create_volume(
+            name=volume,
+            resource_group=resource_group,
+            iops=iops,
+            capacity=capacity,
+            profile=profile,
+            zone=zone,
+            encryption_key=encryption_key
+        )
 
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "volume_name_duplicate":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    exist = volume.get_volume(name)
-                    if "errors" in exist:
-                        module.fail_json(msg=exist["errors"])
-                    else:
-                        module.exit_json(changed=False, msg=(exist))
+            module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(result))
+        module.exit_json(changed=True, msg=result)
 
 
 def main():

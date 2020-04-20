@@ -1,6 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+
+from ansible.module_utils.basic import AnsibleModule
+from ibmcloud_python_sdk.vpc import vpc as sdk
 
 
 ANSIBLE_METADATA = {
@@ -9,41 +15,34 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_vpc_info
-short_description: Retrieve information about VPCs (Virtual Private Cloud).
+short_description: Retrieve VPC (Virtual Private Cloud) on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about VPC (Virtual Private Cloud) from IBM Cloud.
+  - This module lists all VPCs. A VPC is a virtual network that belongs to an
+    account and provides logical isolation from other networks. A VPC is made
+    up of resources in one or more zones. VPCs are regional, and each VPC can
+    contain resources in multiple zones in a region.
 notes:
-    - The result contains a list of VPCs.
+  - The result contains a list of VPCs.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    vpc:
-        description:
-            - Restrict results to vpc with UUID or name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  vpc:
+    description:
+      - Restrict results to vpc with ID or name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve VPC list
-- ic_is_vpc_info:
+EXAMPLES = r'''
+- name: Retrieve VPC list
+  ic_is_vpc_info:
 
-# Retrieve VPC list and register the value
-- ic_is_vpc_info:
-  register: vpcs
-
-# Display vpcs registered value
-- debug:
-    var: vpcs
-
-# Retrieve a specific VPC by ID or by name
-- ic_is_vpc_info:
+- name: Retrieve specific VPC
+  ic_is_vpc_info:
     vpc: ibmcloud-vpc-baby
 '''
 
@@ -60,18 +59,18 @@ def run_module():
         supports_check_mode=False
     )
 
-    vpc = sdk_vpc.Vpc()
+    vpc = sdk.Vpc()
 
     name = module.params['vpc']
 
     if name:
         result = vpc.get_vpc(name)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = vpc.get_vpcs()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
