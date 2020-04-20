@@ -1,10 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.vpc import geo as sdk_geo
+from ibmcloud_python_sdk.vpc import geo as sdk
 
 
 ANSIBLE_METADATA = {
@@ -13,45 +15,41 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_is_zone_info
-short_description: Retrieve information about zones per region.
+short_description: Retrieve VPC zones per regions on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-    - Retrieve information about zones available per region on IBM Cloud.
+  - This module lists all zones in a region. Zones represent logically-isolated
+    data centers with high-bandwidth and low-latency interconnects to other
+    zones in the same region.
+  - Faults in a zone do not affect other zones.
 notes:
-    - The result contains a list of zones.
+  - The result contains a list of zones.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    region:
-        description:
-            - Region name where to list the zone(s).
-        required: true
-    zone:
-        description:
-            - Restrict results to zone with name matching.
-        required: false
-extends_documentation_fragment:
-    - ibmcloud
+  region:
+    description:
+      - Region name.
+    type: str
+  zone:
+    description:
+      - Restrict results to zone with name matching.
+    type: str
 '''
 
-EXAMPLES = '''
-# Retrieve zone list for a specific region and register the value
-- ic_is_zone_info:
-    region: us-south
-  register: zones
+EXAMPLES = r'''
+- name: Retrieve zone list for a specific region
+  ic_is_zone_info:
+    region: ibmcloud-region-baby
 
-# Display regions registered value
-- debug:
-    var: regions
-
-# Retrieve specific zone for a specific region
-- ic_is_zone_info:
-    region: us-south
-    zone: us-south-1
+- name: Retrieve specific zone for a specific region
+  ic_is_zone_info:
+    region: ibmcloud-region-baby
+    zone: ibmcloud-region-baby-1
 '''
 
 
@@ -70,7 +68,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    geo = sdk_geo.Geo()
+    geo = sdk.Geo()
 
     region = module.params['region']
     zone = module.params['zone']
@@ -78,11 +76,11 @@ def run_module():
     if zone:
         result = geo.get_region_zone(region, zone)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = geo.get_region_zones(region)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
