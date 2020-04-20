@@ -232,12 +232,14 @@ def run_module():
         module.exit_json(changed=False, msg=payload)
     else:
         if "id" in check:
-            result = security.create_security_group(
-                name=group,
-                resource_group=resource_group,
-                rules=rules,
-                vpc=vpc
-            )
+            module.exit_json(changed=False, msg=check)
+
+        result = security.create_security_group(
+            name=group,
+            resource_group=resource_group,
+            rules=rules,
+            vpc=vpc
+        )
 
         if "errors" in result:
             module.fail_json(msg=result)
