@@ -1,6 +1,8 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 
 
 from ansible.module_utils.basic import AnsibleModule
@@ -16,11 +18,12 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_is_vpn_gateway_info
-short_description: Retrieve information about VPN gateway.
+short_description: Retrieve VPC VPN gateways IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - Retrieve information about VPN gateway from IBM Cloud.
+  - This module retrieves a paginated list of all VPN gateways that belong
+    to this account.
 notes:
   - The result contains a list of gateways.
 requirements:
@@ -29,22 +32,15 @@ options:
   gateway:
     description:
       - Restrict results to VPN gateway with ID or name matching.
+    type: str
 '''
 
 EXAMPLES = r'''
-# Retrieve VPN gateway list
-- ic_is_vpn_gateway_info:
+- name: Retrieve VPN gateway list
+  ic_is_vpn_gateway_info:
 
-# Retrieve VPN gateway list and register the value
-- ic_is_vpn_gateway_info:
-  register: gateways
-
-# Display VPN gateway registered value
-- debug:
-    var: gateways
-
-# Retrieve a specific VPN gateway
-- ic_is_vpn_gateway_info:
+- name: Retrieve a specific VPN gateway
+  ic_is_vpn_gateway_info:
     gateway: ibmcloud-vpn-gateway-baby
 '''
 
@@ -63,16 +59,16 @@ def run_module():
 
     vpn = sdk.Vpn()
 
-    name = module.params['gateway']
+    gateway = module.params['gateway']
 
-    if name:
-        result = vpn.get_vpn_gateway(name)
+    if gateway:
+        result = vpn.get_vpn_gateway(gateway)
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
     else:
         result = vpn.get_vpn_gateways()
         if "errors" in result:
-            module.fail_json(msg=result["errors"])
+            module.fail_json(msg=result)
 
     module.exit_json(**result)
 
