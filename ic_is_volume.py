@@ -130,8 +130,8 @@ def run_module():
 
     check = vpc_volume.get_volume(volume)
 
-    if "id" in check:
-        if state == "absent":
+    if state == "absent":
+        if "id" in check:
             result = vpc_volume.delete_volume(volume)
             if "errors" in result:
                 module.fail_json(msg=result)
