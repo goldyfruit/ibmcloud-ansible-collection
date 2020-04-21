@@ -57,7 +57,7 @@ EXAMPLES = r'''
     instance: ibmcloud-vsi-baby
     floating_ip: ibmcloud-fip-baby
 
-- name: ttach floating IP on specific interface of a VSI
+- name: Attach floating IP on specific interface of a VSI
   ic_is_instance_fip:
     instance: ibmcloud-vsi-baby
     floating_ip: ibmcloud-vip-baby
