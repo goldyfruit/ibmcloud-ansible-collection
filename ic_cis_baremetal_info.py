@@ -35,7 +35,7 @@ options:
 '''
 
 EXAMPLES = r'''
-- name: Retrieve beremetal server list
+- name: Retrieve baremetal server list
   ic_cis_baremetal_info:
 
 - name: Retrieve specific baremetal server
