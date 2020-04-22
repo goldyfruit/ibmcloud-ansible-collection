@@ -22,10 +22,10 @@ short_description: Retrieve CIS baremetal server power state on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
-  - This module retrieve baremetal server power state information from CIS
-    (Cloud Infrastructure).
+  - Retrieves the power state for the server. The server's power status is
+    retrieved from its remote management card.
 notes:
-  - The result contains server power state.
+  - The result contains the server power state.
 requirements:
   - "ibmcloud-python-sdk"
 options:
