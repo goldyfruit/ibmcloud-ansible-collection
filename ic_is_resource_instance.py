@@ -38,7 +38,7 @@ options:
             -  Indicates the plan which will be used to deploy the resource
                instance. If absent, the DNS resource plan will be used.
         required: false
-        choices: [dns]
+        choices: [dns, object-storage]
         default: dns
     target:
         description:
