@@ -80,7 +80,7 @@ def run_module():
         resource_plan=dict(
             type='str',
             default='dns',
-            choices=['dns'],
+            choices=['dns', 'object-storage'],
             required=False),
         target=dict(
             type='str',
