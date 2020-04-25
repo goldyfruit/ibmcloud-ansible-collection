@@ -62,6 +62,12 @@ EXAMPLES = '''
     resource_plan: dns
     target: bluemix-global
 
+# Create resource instance for object storage
+- ic_is_resource_instance:
+    instance: ibmcloud-object-resource-instance-baby
+    resource_group: my-resource-group
+    resource_plan: object-storage
+
 # Delete resource instance
 - ic_is_resource_instance
     name: ibmcloud-resource-instance-baby
