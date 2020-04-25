@@ -129,8 +129,7 @@ def run_module():
                             resource_plan=resource_plan)
                     if "errors" in result:
                         module.fail_json(msg=result["errors"])
-                    else:
-                        module.exit_json(changed=True, msg=result)
+                    module.exit_json(changed=True, msg=result)
 
         module.exit_json(changed=False, msg=check)
 
