@@ -19,7 +19,7 @@ short_description: Get information about a private DNS zone.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Get insformation about a private DNS zone on IBM Cloud.
+    - Get information about a private DNS zone on IBM Cloud.
 requirements:
     - "ibmcloud-python-sdk"
 options:
@@ -30,7 +30,7 @@ options:
     resource_instance:
         description:
             -  Name or UUID of the resource instance associated with the DNS.
-        required: false
+        required: falsey
 '''
 
 EXAMPLES = '''
