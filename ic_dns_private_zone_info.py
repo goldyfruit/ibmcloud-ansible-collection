@@ -15,38 +15,22 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = '''
 ---
 module: ic_dns_private_zone_info
-short_description: Create or delete private DNS instance.
+short_description: Get information about a private DNS zone.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Create or delete private DNS instamce on IBM Cloud.
+    - Get insformation about a private DNS zone on IBM Cloud.
 requirements:
     - "ibmcloud-python-sdk"
 options:
     dns_zone:
         description:
-            -  Name that has to be given to the DNS to create or delete.
-                During the removal an UUID could be used.
+            -  Name of the zone.
         required: true
     resource_instance:
         description:
-            -  Name or UUID of the resource group where the VPC has to
-               be created.
+            -  Name or UUID of the resource instance associated with the DNS.
         required: false
-    description:
-        description:
-            -  A short description of the DNS.
-        required: false
-    label:
-        description:
-            -  A label for the DNS.
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
 '''
 
 EXAMPLES = '''
