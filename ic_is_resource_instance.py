@@ -37,9 +37,8 @@ options:
         description:
             -  Indicates the plan which will be used to deploy the resource
                instance. If absent, the DNS resource plan will be used.
-        required: false
+        required: true
         choices: [dns, object-storage]
-        default: dns
     target:
         description:
             -  Indicates where the resource instance should be deployed.
@@ -85,7 +84,6 @@ def run_module():
             required=False),
         resource_plan=dict(
             type='str',
-            default='dns',
             choices=['dns', 'object-storage'],
             required=False),
         target=dict(
@@ -124,6 +122,8 @@ def run_module():
         module.exit_json(changed=True, msg=(
             "resource instance {} successfully deleted".format(name)))
     else:
+        if resource_plan is None:
+            module.fail_json(msg="resource_plan is missing !")
         check = resource_instance.get_resource_instance(name)
         if "errors" in check:
             for key in check["errors"]:
