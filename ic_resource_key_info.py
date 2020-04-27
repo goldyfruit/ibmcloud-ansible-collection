@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_resource_key_info
-short_description: Retrieve available resource keys on IBM Cloud.
+short_description: Retrieve resource keys on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
 description:
