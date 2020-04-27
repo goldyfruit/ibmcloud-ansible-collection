@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource_instance as sdk
+from ibmcloud_python_sdk.resource import resource_instance as sdk
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -11,35 +15,31 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
-module: ic_is_resource_instance_info
-short_description: Retrieve information about resource instance.
+module: ic_resource_instance_info
+short_description: Retrieve resource instances on IBM Cloud.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Retrieve information about resource instance from IBM Cloud.
+  - This module retrieve information about resource instances.
 notes:
-    - The result will be a single or a list resource instance.
+  - The result contains a list of resource instances.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    instance:
-        description: 
-            -  Restrict results to a resource instance  with GUID or 
-            name matching.
-        required: false
+  instance:
+    description:
+      - Restrict results to a resource instance with GUID or name matching.
 '''
 
-EXAMPLES = '''
-# Get resource instances info
-- ic_is_resource_instance_info:
-  register: resource_instances
+EXAMPLES = r'''
+- name: Retrieve resource instance list
+  ic_resource_instance_info:
 
-#  Get info for ibmcloud-vpc-baby 
-- ic_is_resource_instance_info
-    name: ibmcloud-vpc-baby
-
+- name: Retrieve specific resource instance
+  ic_resource_instance_info
+    instance: ibmcloud-ri-baby
 '''
 
 
@@ -60,46 +60,16 @@ def run_module():
 
     instance = module.params['instance']
 
-    if instance: 
+    if instance:
         result = resource_instance.get_resource_instance(instance)
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "resource instance {} doesn't exist").format(name))
-        else:
-            module.exit_json(changed=False, msg=(result))
+            module.fail_json(msg=result)
     else:
         result = resource_instance.get_resource_instances()
         if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "resource instance {} doesn't exist").format(name))
-        else:
-            module.exit_json(changed=False, msg=(result))
-#    module.exit_json(changed=True, msg=(
-#        "resource instance {} successfully deleted").format(name))
-#    existing_resource = resource_instance.get_resource_instance(name)
-#    if "errors" in existing_resource:
-#        for key in existing_resource["errors"]:
-#            if key["code"] == "not_found":
-#                # if the resource instance doesn't exist
-#                result = resource_instance.create_resource_instance(
-#                        name=name,
-#                        resource_group=rg,
-#                        target=target,
-#                        resource_plan=resource_plan)
-#                if "errors" in result:
-#                    module.fail_json(msg=result["errors"])
-#                else:
-#                    module.exit_json(changed=True, msg=(
-#                        "resource instance {} successfully created").format(name))
-#    module.exit_json(changed=False, msg=(existing_resource))
+            module.fail_json(msg=result)
+
+    module.exit_json(**result)
 
 
 def main():
