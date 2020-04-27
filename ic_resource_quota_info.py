@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_is_quota_definition_info
+module: ic_resource_quota_info
 short_description: Retrieve quota definitions on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -36,10 +36,10 @@ options:
 
 EXAMPLES = r'''
 - name: Retrieve quota definitions list
-  ic_is_quota_definition_info:
+  ic_resource_quota_info:
 
 - name: Retrieve specific quota definition
-  ic_is_quota_definition_info:
+  ic_resource_quota_info:
     quota: ibmcloud-quota-baby
 '''
 
