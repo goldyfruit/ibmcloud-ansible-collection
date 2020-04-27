@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_is_resource_key_info
+module: ic_resource_key_info
 short_description: Retrieve available resource keys on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -36,10 +36,10 @@ options:
 
 EXAMPLES = r'''
 - name: Retrieve resource key list
-  ic_is_resource_key_info:
+  ic_resource_key_info:
 
 - name: Retrieve specific resource key
-  ic_is_resource_key_info:
+  ic_resource_key_info:
     key: ibmcloud-rk-baby
 '''
 
