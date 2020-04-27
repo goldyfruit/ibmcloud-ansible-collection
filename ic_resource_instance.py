@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource_instance as sdk
+from ibmcloud_python_sdk.resource import resource_instance as sdk
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -11,65 +14,82 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
-module: ic_is_resource_instance
-short_description: Create or delete resource instance.
+module: ic_resource_instance
+short_description: Manage resource instance on IBM Cloud.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Create or delete resource instance on IBM Cloud.
+  - The resource controller can provision or create an instance. Provisioning
+    reserves a resource on a service, and the reserved resource is a service
+    instance. A resource instance can vary by service.
+  - Examples include a single database on a multi-tenant server, a dedicated
+    cluster, or an account on a web application.
 requirements:
     - "ibmcloud-python-sdk"
 options:
-    instance:
-        description:
-            -  Name that has to be given to the resource instance to
-               create or delete. During the removal an UUID could be used.
-        required: true
-    resource_group:
-        description:
-            -  Name or UUID of the resource group where the resource
-            instance has to be created. If absent, the default resource
-            group will be used.
-        required: false
-    resource_plan:
-        description:
-            -  Indicates the plan which will be used to deploy the resource
-               instance. If absent, the DNS resource plan will be used.
-        required: true
-        choices: [dns, object-storage]
-    target:
-        description:
-            -  Indicates where the resource instance should be deployed.
-        default: bluemix-global
-        required: false
-    state:
-        description:
-            - Should the resource be present or absent.
-        required: false
-        choices: [present, absent]
-        default: present
-extends_documentation_fragment:
-    - ibmcloud
+  instance:
+    description:
+      - The name of the instance. Must be 180 characters or less and cannot
+        include any special characters other than (space) - . _ :.
+    type: str
+    required: true
+  resource_group:
+    description:
+      - Short or long ID of resource group.
+    type: str
+  resource_plan:
+    description:
+      - The unique ID of the plan associated with the offering. This value is
+        provided by and stored in the global catalog.
+      - If absent, the DNS resource plan will be used.
+    type: str
+    choices: [dns, object-storage]
+  target:
+    description:
+      - The deployment location where the instance should be hosted.
+    type: str
+    default: bluemix-global
+  tags:
+    description:
+      - Tags that are attached to the instance after provisioning. These tags
+        can be searched and managed through the Tagging API in IBM Cloud.
+    type: list
+  allow_cleanup:
+    description:
+      - A boolean that dictates if the resource instance should be deleted
+        (cleaned up) during the processing of a region instance delete call.
+    type: bool
+    choices: [true, false]
+  parameters:
+    description:
+      - Configuration options represented as key-value pairs that are passed
+        through to the target resource brokers.
+    type: str
+  state:
+    description:
+      - Should the resource be present or absent.
+    default: present
+    choices: [present, absent]
 '''
 
-EXAMPLES = '''
-# Create resource instance
-- ic_is_resource_instance:
-    name: ibmcloud-resource-instance-baby
+EXAMPLES = r'''
+- name: Create resource instance
+  ic_resource_instance:
+    instance: ibmcloud-resource-instance-baby
     resource_plan: dns
     target: bluemix-global
 
-# Create resource instance for object storage
-- ic_is_resource_instance:
+- name: Create resource instance for object storage
+  ic_resource_instance:
     instance: ibmcloud-object-resource-instance-baby
-    resource_group: my-resource-group
+    resource_group: ibmcloud-rg-baby
     resource_plan: object-storage
 
-# Delete resource instance
-- ic_is_resource_instance
-    name: ibmcloud-resource-instance-baby
+- name: Delete resource instance
+  ic_resource_instance:
+    instance: ibmcloud-resource-instance-baby
     state: absent
 '''
 
@@ -89,6 +109,16 @@ def run_module():
         target=dict(
             type='str',
             required=False),
+        tags=dict(
+            type='list',
+            required=False),
+        allow_cleanup=dict(
+            type='bool',
+            choices=[True, False],
+            required=False),
+        parameters=dict(
+            type='str',
+            required=False),
         state=dict(
             type='str',
             default='present',
@@ -103,41 +133,48 @@ def run_module():
 
     resource_instance = sdk.ResourceInstance()
 
-    name = module.params['instance']
+    instance = module.params['instance']
     resource_group = module.params["resource_group"]
     target = module.params['target']
+    # Commented until added into the SDK
+    # tags = module.params['tags']
+    # allow_cleanup = module.params['allow_cleanup']
+    # parameters = module.params['parameters']
     resource_plan = module.params['resource_plan']
     state = module.params['state']
 
+    check = resource_instance.get_resource_instance(instance)
+
     if state == "absent":
-        result = resource_instance.delete_resource_instance(name)
-        if "errors" in result:
-            for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
-                else:
-                    module.exit_json(changed=False, msg=(
-                        "resource instance {} doesn't exist".format(name)))
+        if "id" in check:
+            result = resource_instance.delete_resource_instance(instance)
+            if "errors" in result:
+                module.fail_json(msg=result)
 
-        module.exit_json(changed=True, msg=(
-            "resource instance {} successfully deleted".format(name)))
+            payload = {"resource_instance": instance, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
+
+        payload = {"resource_instance": instance, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
     else:
-        if resource_plan is None:
-            module.fail_json(msg="resource_plan is missing !")
-        check = resource_instance.get_resource_instance(name)
-        if "errors" in check:
-            for key in check["errors"]:
-                if key["code"] == "not_found":
-                    result = resource_instance.create_resource_instance(
-                            name=name,
-                            resource_group=resource_group,
-                            target=target,
-                            resource_plan=resource_plan)
-                    if "errors" in result:
-                        module.fail_json(msg=result["errors"])
-                    module.exit_json(changed=True, msg=result)
+        if "id" in check:
+            module.exit_json(changed=False, msg=check)
 
-        module.exit_json(changed=False, msg=check)
+        if resource_plan is None:
+            payload = {"errors": {"code": "resource_plan is missing"}}
+            module.fail_json(msg=payload)
+
+        result = resource_instance.create_resource_instance(
+                name=instance,
+                resource_group=resource_group,
+                target=target,
+                resource_plan=resource_plan
+        )
+
+        if "errors" in result:
+            module.fail_json(msg=result)
+
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
