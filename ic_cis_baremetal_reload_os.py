@@ -53,7 +53,7 @@ options:
     choices: [true, false]
   provision_script_uri:
     description:
-      - Sill be used to download and execute a customer defined script on the
+      - will be used to download and execute a customer defined script on the
         host at the end of provisioning.
     type: str
   drive_retention:
