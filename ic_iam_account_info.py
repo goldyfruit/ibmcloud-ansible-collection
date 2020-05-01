@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_account_info
+module: ic_iam_account_info
 short_description: Retrieve information about IAM account on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -37,7 +37,7 @@ options:
 
 EXAMPLES = r'''
 - name: Retrieve account details
-  ic_account_info:
+  ic_iam_account_info:
 '''
 
 
