@@ -152,7 +152,7 @@ def run_module():
                                 label=label)
 
         if "errors" in result:
-            module.fail_json(msg=esult["errors"])
+            module.fail_json(msg=result["errors"])
         else:
             module.exit_json(changed=True, msg=(result))
 
