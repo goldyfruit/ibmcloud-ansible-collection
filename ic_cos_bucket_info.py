@@ -13,7 +13,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 ---
-module: ic_cos_bucket_info
+module: ic_cos_info
 short_description: Get a list of buckets.
 author: James Regis (@jregis)
 version_added: "2.9"
@@ -27,9 +27,9 @@ options:
         required: true
     location:
         description:
-            -  Geographic location of the buckets.
+            -  Geographic bucket location.
         required: true        
-    service_instance_:
+    service_instance:
         description:
             -  Name or UUID of the service_instance associated with the cloud 
                object storage.
@@ -38,12 +38,11 @@ options:
 
 EXAMPLES = '''
 # Get all buckets in the zone
-- ic_cos_bucket_info:
+- ic_cos_info:
     mode: regional
     location: us-south
     service_instance: my-service-instance-baby 
 '''
-
 
 def run_module():
     module_args = dict(
@@ -79,18 +78,19 @@ def run_module():
     location = module.params['location']
     service_instance = module.params["service_instance"]
 
-    result = object_storage.get_buckets(mode=mode, location=location,
+    check = object_storage.get_buckets(mode=mode, location=location,
         service_instance=service_instance)
-    if "errors" in result:
-        for key in result["errors"]:
+
+    if "errors" in check:
+        for key in check["errors"]:
             if key["code"] != "not_found":
-                module.fail_json(msg=result["errors"])
+                module.fail_json(msg=check["errors"])
             else:
                 module.exit_json(changed=False, msg=(
                     "The service instance {} doesn't exist".format(
                         service_instance)))
 
-    module.exit_json(changed=True, msg=(result))
+    module.exit_json(changed=True, msg=(check))
 
 def main():
     run_module()
