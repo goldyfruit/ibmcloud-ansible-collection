@@ -115,11 +115,10 @@ def run_module():
     resource_instance = module.params["resource_instance"]
     record = module.params['record']
     record_name = module.params['record_name']
-    record_id = module.params['record_id']
+    # record_id = module.params['record_id']
     state = module.params['state']
 
     if state == "absent":
-#        module.exit_json(changed=True, msg=(record))
         if record_name:
             result = dns.delete_resource_record(dns_zone=dns_zone,
                     resource_instance=resource_instance,
