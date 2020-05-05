@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_cos_info
 short_description: Get a list of buckets.
@@ -36,7 +36,7 @@ options:
         required: true
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Get all buckets in the zone
 - ic_cos_info:
     mode: regional
