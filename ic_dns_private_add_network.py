@@ -12,7 +12,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_dns_private_add_network
 short_description: Add or delete permitted network to a private dns zone.
@@ -45,7 +45,7 @@ options:
         default: present
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Add my-vpc-oh-yeah VPC as allowed permitted network
 - ic_dns_private_add_network:
     dns_zone: ibmcloud-dns-baby
