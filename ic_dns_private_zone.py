@@ -12,7 +12,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_dns_private_zone
 short_description: Create or delete private DNS instance.
@@ -49,7 +49,7 @@ options:
         default: present
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Create private VPC with resource group, description and label
 - ic_dns_private_zone:
     dns_zone: ibmcloud-dns-baby
