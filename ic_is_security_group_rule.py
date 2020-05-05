@@ -141,8 +141,8 @@ def _check_rule(module):
     if "errors" in data:
         module.fail_json(msg=data)
 
-    msg = ("rule already exists in security group {}".format(
-        module.params["group"]))
+        payload = {"security_group": module.params["group"],
+                   "status": "already_exists"}
 
     # "Workaround" for 80 chars Pylint
     cird_block = module.params["cidr_block"]
@@ -159,7 +159,7 @@ def _check_rule(module):
                 or i["remote"].get("address", "") == module.params["address"]
                 or i["remote"].get("id", "") == module.params["security_group"]
             ):
-                module.exit_json(changed=False, msg=msg)
+                module.exit_json(changed=False, msg=payload)
         elif (
             i["direction"] == module.params["direction"]
             and i.get("type", "") == module.params["type"]
@@ -171,7 +171,7 @@ def _check_rule(module):
                 or i["remote"].get("address", "") == module.params["address"]
                 or i["remote"].get("id", "") == module.params["security_group"]
             ):
-                module.exit_json(changed=False, msg=msg)
+                module.exit_json(changed=False, msg=payload)
 
 
 def run_module():
