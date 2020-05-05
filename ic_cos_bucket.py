@@ -37,6 +37,35 @@ options:
             -  Name or UUID of the service_instance associated with the cloud 
                object storage.
         required: true
+    grant_full_control: 
+        description: 
+            - Allows grantee the read, write, read ACP, and write ACP 
+            permissions on the bucket. 
+        required: false
+    grant_read: 
+        description:
+        allows grantee to list the objects in the bucket.
+    grant_readacp: 
+        description:
+            - Allows grantee to read the bucket ACL.
+        required: false        
+    grant_write: 
+        description allows grantee to create, overwrite, and delete 
+            any object in the bucket.
+        required: false    
+    grant_write_acp:
+        description:
+            - Allows grantee to write the ACL for the applicable bucket.
+        required: false
+    ibm_sse_kp_encryptions_algorithm: 
+        description:
+            - The encryption algorithm that will be used for objects stored in
+             the newly created bucket. Defaults to 'AES256'.
+        required: false
+    ibm_sse_kp_customer_root_key_crn: 
+        description:
+            - Container for describing the KMS-KP Key CRN.
+        required: false        
   state:
     description:
       - Should the resource be present or absent.
@@ -87,6 +116,30 @@ def run_module():
         service_instance=dict(
             type='str',
             required=True),
+        acl=dict(
+            type='str',
+            required=False),
+        grant_full_control=dict(
+            type='str',
+            required=False),
+        grant_read=dict(
+            type='str',
+            required=False),
+        grant_read_acp=dict(
+            type='str',
+            required=False),
+        grant_write=dict(
+            type='str',
+            required=False),
+        grant_write_acp=dict(
+            type='str',
+            required=False),
+        ibm_sse_kp_encryptions_algorithm=dict(
+            type='str',
+            required=False),
+        ibm_sse_kp_customer_root_key_crn=dict(
+            type='str',
+            required=False),
         state=dict(
             type='str',
             default='present',
@@ -106,6 +159,15 @@ def run_module():
     location = module.params['location']
     service_instance = module.params["service_instance"]
     state = module.params["state"]
+
+    acl = module.params["acl"]
+    grant_full_control = module.params["grant_full_control"]
+    grant_read = module.params["grant_read"]
+    grant_read_acp = module.params["grant_read_acp"]
+    grant_write = module.params["grant_write"]
+    grant_write_acp = module.params["grant_write_acp"]
+    ibm_sse_kp_encryptions_algorithm = module.params["ibm_sse_kp_encryptions_algorithm"]
+    ibm_sse_kp_customer_root_key_crn = module.params["ibm_sse_kp_customer_root_key_crn"]
     
     check = object_storage.get_bucket(
             bucket=bucket,
@@ -142,7 +204,15 @@ def run_module():
                     bucket=bucket,
                     mode=mode,
                     location=location,
-                    service_instance=service_instance)
+                    service_instance=service_instance,
+                    acl=acl,
+                    grant_full_control=grant_full_control,
+                    grant_read=grant_read,
+                    grant_read_acp=grant_read_acp,
+                    grant_write=grant_write,
+                    grant_write_acp=grant_write_acp,
+                    ibm_sse_kp_encryptions_algorithm=ibm_sse_kp_encryptions_algorithm,
+                    ibm_sse_kp_customer_root_key_crn=ibm_sse_kp_customer_root_key_crn)
                 
                 if "errors" in result:
                     module.fail_json(msg=result["errors"])
