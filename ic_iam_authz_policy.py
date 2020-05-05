@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_iam_authorization_policy
+module: ic_iam_authz_policy
 short_description: Manage IAM authorization policies on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -83,7 +83,7 @@ options:
 
 EXAMPLES = r'''
 - name: Allow Infrastructure Image to communicate with Cloud Object Storage
-  ic_iam_authorization_policy:
+  ic_iam_authz_policy:
     subjects:
       source_service_name: is
       source_resource_type: image
@@ -95,7 +95,7 @@ EXAMPLES = r'''
       - Writer
 
 - name: Delete authorization policy
-  ic_iam_authorization_policy:
+  ic_iam_authz_policy:
     policy: a0a03ee9-48c7-4c58-be49-6f473a98ae16
     state: absent
 '''
