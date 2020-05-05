@@ -12,7 +12,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_dns_private_zone_info
 short_description: Get information about a private DNS zone.
@@ -33,7 +33,7 @@ options:
         required: falsey
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Get information about ibmcloud-dns-baby dns zone
 - ic_dns_private_zone_info:
     dns_zone: ibmcloud-dns-baby
