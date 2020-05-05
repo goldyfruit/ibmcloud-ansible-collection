@@ -56,7 +56,7 @@ options:
 '''
 
 EXAMPLES = '''
-# Put a object "this is a content" as content in a bucket
+# Put a object with "this is a content" as content in a bucket
 - ic_cos_object:
     body: 'this is a content' 
     key: it-s-an-object-baby
