@@ -11,7 +11,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community'
 }
 
-DOCUMENTATION = '''
+DOCUMENTATION = r'''
 ---
 module: ic_cos_object
 short_description: Manage buckets and objects.
@@ -55,7 +55,7 @@ options:
     choices: [present, absent]
 '''
 
-EXAMPLES = '''
+EXAMPLES = r'''
 # Put a object with "this is a content" as content in a bucket
 - ic_cos_object:
     body: 'this is a content' 
