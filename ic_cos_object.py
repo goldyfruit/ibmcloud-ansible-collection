@@ -157,7 +157,7 @@ def run_module():
         for key in check["errors"]:
             if key["code"] == "not_found":
                 module.exit_json(changed=False, msg=(
-                    "bucket {} should exist prior upload content.".format(
+                    "bucket {} should exist before any operation.".format(
                                 bucket)))
     if state == "absent":
         
