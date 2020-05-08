@@ -1,0 +1,39 @@
+namespace: ibmcloud
+name: cloud_automation
+version: 1.0.0
+readme: README.md
+authors:
+- Gaëtan Trellu <gaetan.trellu@ibm.com>
+- James Regis <james.regis@ibm.com>
+
+description: Modules to interact with features running on IBM Cloud platform.
+license:
+- MPL-2.0
+license_file: 'LICENSE'
+
+tags:
+  - ibmcloud
+  - cloud
+  - collection
+  - vpc
+  - vsi
+  - classic
+  - infrastructure
+  - baremetal
+  - softlayer
+
+dependencies:
+  community.general: "*"
+
+repository: https://github.com/IBM-Cloud/ibmcloud-ansible
+documentation:
+homepage:
+
+issues: https://github.com/IBM-Cloud/ibmcloud-ansible/issues
+
+build_ignore:
+  - venv
+  - ansible_collections
+  - tests/output
+  - .pytest_cache
+  - .vscode
