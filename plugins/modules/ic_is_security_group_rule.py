@@ -122,8 +122,7 @@ EXAMPLES = r'''
     protocol: icmp
     code: 0
     type: 8
-    remote:
-      cidr_block: 0.0.0.0/0
+    cidr_block: 0.0.0.0/0
 
 - name: Delete rule
   ic_is_security_group_rule:
