@@ -141,8 +141,8 @@ def _check_rule(module):
     if "errors" in data:
         module.fail_json(msg=data)
 
-        payload = {"security_group": module.params["group"],
-                   "status": "already_exists"}
+    payload = {"security_group": module.params["group"],
+               "status": "already_exists"}
 
     # "Workaround" for 80 chars Pylint
     cird_block = module.params["cidr_block"]
@@ -217,9 +217,8 @@ def run_module():
             required=False),
         unique=dict(
             type='bool',
-            default='true',
-            choices=[True, False],
-            required=False),
+            default=True,
+            choices=[True, False]),
         state=dict(
             type='str',
             default='present',
@@ -265,28 +264,27 @@ def run_module():
                    "status": "not_found"}
         module.exit_json(changed=False, msg=payload)
     else:
-        if "id" in check:
-            if unique:
-                _check_rule(module)
+        if unique:
+            _check_rule(module)
 
-            result = security.create_security_group_rule(
-                sg=group,
-                direction=direction,
-                ip_version=ip_version,
-                protocol=protocol,
-                port_max=port_max,
-                port_min=port_min,
-                code=code,
-                type=type,
-                cidr_block=cidr_block,
-                address=address,
-                security_group=security_group
-            )
+        result = security.create_security_group_rule(
+            sg=group,
+            direction=direction,
+            ip_version=ip_version,
+            protocol=protocol,
+            port_max=port_max,
+            port_min=port_min,
+            code=code,
+            type=type,
+            cidr_block=cidr_block,
+            address=address,
+            security_group=security_group
+        )
 
-            if "errors" in result:
-                module.fail_json(msg=result)
+        if "errors" in result:
+            module.fail_json(msg=result)
 
-            module.exit_json(changed=True, msg=result)
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
