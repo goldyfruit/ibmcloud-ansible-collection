@@ -3,12 +3,12 @@ name: cloud_automation
 version: 1.0.0
 readme: README.md
 authors:
-- Gaëtan Trellu <gaetan.trellu@ibm.com>
-- James Regis <james.regis@ibm.com>
+  - Gaëtan Trellu <gaetan.trellu@ibm.com>
+  - James Regis <james.regis@ibm.com>
 
 description: Modules to interact with features running on IBM Cloud platform.
 license:
-- MPL-2.0
+  - MPL-2.0
 license_file: 'LICENSE'
 
 tags:
@@ -28,7 +28,6 @@ dependencies:
 repository: https://github.com/IBM-Cloud/ibmcloud-ansible
 documentation:
 homepage:
-
 issues: https://github.com/IBM-Cloud/ibmcloud-ansible/issues
 
 build_ignore:
