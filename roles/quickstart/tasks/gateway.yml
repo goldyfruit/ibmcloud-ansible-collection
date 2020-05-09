@@ -1,0 +1,7 @@
+---
+- name: Create public gateway
+  ic_is_gateway:
+    gateway: "{{ gateway_name }}"
+    vpc: "{{ vpc_name }}"
+    resource_group: "{{ resource_group_name }}"
+    zone: "{{ zone_name }}"

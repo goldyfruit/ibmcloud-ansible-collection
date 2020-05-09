@@ -1,0 +1,12 @@
+---
+- name: Create VPC (Virtual Private Cloud)
+  ic_is_vpc:
+    vpc: "{{ vpc_name }}"
+    resource_group: "{{ resource_group_name | default(omit) }}"
+
+- name: Create VPC address prefix
+  ic_is_vpc_address_prefix:
+    vpc: "{{ vpc_name }}"
+    prefix: "{{ vpc_address_prefix_name }}"
+    cidr: "{{ subnet_cidr }}"
+    zone: "{{ zone_name }}"

@@ -1,0 +1,25 @@
+---
+- name: Create security group
+  ic_is_security_group:
+    group: "{{ security_group_name }}"
+    vpc: "{{ vpc_name }}"
+    resource_group: "{{ resource_group_name | default(omit) }}"
+
+- name: Add rule to open SSH
+  ic_is_security_group_rule:
+    group: "{{ security_group_name }}"
+    direction: inbound
+    protocol: tcp
+    port_min: "{{ item }}"
+    port_max: "{{ item }}"
+    cidr_block: 0.0.0.0/0
+  loop: "{{ ports_to_open }}"
+
+- name: Add rule to allow ICMP
+  ic_is_security_group_rule:
+    group: "{{ security_group_name }}"
+    direction: inbound
+    protocol: icmp
+    code: 0
+    type: 8
+    cidr_block: 0.0.0.0/0

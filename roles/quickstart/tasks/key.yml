@@ -1,0 +1,6 @@
+---
+- name: Add SSH public key
+  ic_is_key:
+    key: "{{ key_name }}"
+    public_key: "{{ ssh_public_key }}"
+    resource_group: "{{ resource_group_name | default(omit) }}"

@@ -1,0 +1,8 @@
+---
+- import_tasks: vpc.yml
+- import_tasks: gateway.yml
+- import_tasks: subnet.yml
+- import_tasks: security_group.yml
+- import_tasks: key.yml
+- import_tasks: floating.yml
+- import_tasks: vsi.yml

@@ -1,0 +1,27 @@
+---
+- name: Create VSI (Virtual Server Instance)
+  ic_is_instance:
+    instance: "{{ vsi_name }}"
+    keys:
+      - "{{ key_name }}"
+    profile: "{{ vsi_profile_name }}"
+    resource_group: "{{ resource_group_name | default(omit) }}"
+    vpc: "{{ vpc_name }}"
+    image: "{{ vsi_image_name }}"
+    primary_network_interface:
+      subnet: "{{ subnet_name }}"
+    boot_volume_attachment:
+      volume:
+        capacity: 100
+        profile: general-purpose
+    zone: "{{ zone_name }}"
+
+- name: Attach security group to VSI
+  ic_is_instance_security_group:
+    instance: "{{ vsi_name }}"
+    group: "{{ security_group_name }}"
+
+- name: Attach floating IP to VSI
+  ic_is_instance_fip:
+    instance: "{{ vsi_name }}"
+    floating_ip: "{{ floating_ip_name }}"
