@@ -121,8 +121,8 @@ def run_module():
 
     check = vpc.get_vpc(name)
 
-    if "id" in check:
-        if state == "absent":
+    if state == "absent":
+        if "id" in check:
             result = vpc.delete_vpc(name)
             if "errors" in result:
                 module.fail_json(msg=result)
