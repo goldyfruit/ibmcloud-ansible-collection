@@ -138,7 +138,7 @@ def run_module():
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
-        result = vpc.create_vpc(
+        result = sdk_vpc.create_address_prefix(
             vpc=vpc,
             name=prefix,
             cidr=cidr,
