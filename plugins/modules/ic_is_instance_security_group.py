@@ -92,7 +92,7 @@ def run_module():
             required=True),
         state=dict(
             type='str',
-            default='detach',
+            default='attach',
             choices=['absent', 'present', 'attach', 'detach'],
             required=False),
     )
