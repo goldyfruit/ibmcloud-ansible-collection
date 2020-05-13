@@ -45,11 +45,6 @@ options:
     description:
       - The file from which to create the image.
     type: str
-  format:
-    description:
-      - The format of the image and the image file.
-    type: str
-    choices: [box, ova, qcow2, raw, vdi, vhd, vhdx, vmdk]
   source_volume:
     description:
       - The volume from which to create the image.
@@ -71,7 +66,6 @@ EXAMPLES = r'''
   ic_is_image:
     image: ibmcloud-image-baby
     file: cos://us-south/ibmcloud-bucket-baby/CentOS-8.1.1911.x86_64.qcow2
-    format: qcow2
     operating_system: centos-7-amd64
 
 - name: Delete an image
@@ -91,11 +85,6 @@ def run_module():
             required=False),
         file=dict(
             type='str',
-            required=False),
-        format=dict(
-            type='str',
-            choices=['box', 'ova', 'qcow2', 'raw', 'vdi', 'vhd',
-                     'vhdx', 'vmdk'],
             required=False),
         operating_system=dict(
             type='str',
@@ -120,7 +109,6 @@ def run_module():
     image = module.params['image']
     resource_group = module.params['resource_group']
     file = module.params['file']
-    format = module.params['format']
     operating_system = module.params['operating_system']
     source_volume = module.params['source_volume']
     state = module.params['state']
@@ -146,7 +134,6 @@ def run_module():
             name=image,
             resource_group=resource_group,
             file=file,
-            format=format,
             operating_system=operating_system,
             source_volume=source_volume
         )
