@@ -48,7 +48,7 @@ Multiple account credentials could be provided, `default` option receives the ac
 
 ## Install
 
-   $ ansible-galaxy collection install ibmcloud.cloud_automation
+    $ ansible-galaxy collection install ibmcloud.cloud_automation
 
 The collection will be automatically installed in `~/.ansible/collections/ansible_collections/ibmcloud/` directory.
 
