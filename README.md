@@ -25,19 +25,19 @@ Multiple account credentials could be provided, `default` option receives the ac
         description: Credentials from my IBM Cloud demo account
         key: XxX1234567890XxX
         region: us-south
-        version: 2020-04-07
+        version: 2020-04-21
         generation: 2
         cis_username: 000000_sponge.bob@sink.com
         cis_apikey: abc123def456ghi789klm0n
     prod-acc:
         profile: prod
         description: Credentials from my IBM Cloud production account
-        key: XxX1234567890XxX
+        key: zZz1234567890zZz
         region: us-south
-        version: 2020-04-07
+        version: 2020-04-21
         generation: 2
-        cis_username: 000000_sponge.bob@sink.com
-        cis_apikey: abc123def456ghi789klm0n
+        cis_username: 999999_sponge.bob@sink.com
+        cis_apikey: #abc123def456ghi789klm0n#
 
 
 ## Requirements
