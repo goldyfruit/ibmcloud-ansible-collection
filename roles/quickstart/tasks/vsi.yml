@@ -25,3 +25,7 @@
   ic_is_instance_fip:
     instance: "{{ vsi_name }}"
     floating_ip: "{{ floating_ip_name }}"
+
+- name: Connection information to the VSI
+  debug:
+    msg: "VSI floating IP: {{ fip_info | json_query('nics[0].floating_ips[0].address') }} | SSH user: root"
