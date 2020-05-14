@@ -43,14 +43,11 @@ options:
     description:
       - The unique ID of the plan associated with the offering. This value is
         provided by and stored in the global catalog.
-      - If absent, the DNS resource plan will be used.
     type: str
-    choices: [dns, object-storage]
   target:
     description:
       - The deployment location where the instance should be hosted.
     type: str
-    default: bluemix-global
   tags:
     description:
       - Tags that are attached to the instance after provisioning. These tags
@@ -61,6 +58,7 @@ options:
       - A boolean that dictates if the resource instance should be deleted
         (cleaned up) during the processing of a region instance delete call.
     type: bool
+    default: false
     choices: [true, false]
   parameters:
     description:
@@ -78,14 +76,10 @@ EXAMPLES = r'''
 - name: Create resource instance
   ic_resource_instance:
     instance: ibmcloud-resource-instance-baby
-    resource_plan: dns
+    resource_plan: ibmcloud-resource-plan
     target: bluemix-global
-
-- name: Create resource instance for object storage
-  ic_resource_instance:
-    instance: ibmcloud-object-resource-instance-baby
-    resource_group: ibmcloud-rg-baby
-    resource_plan: object-storage
+    tags:
+      - cos
 
 - name: Delete resource instance
   ic_resource_instance:
@@ -104,7 +98,6 @@ def run_module():
             required=False),
         resource_plan=dict(
             type='str',
-            choices=['dns', 'object-storage'],
             required=False),
         target=dict(
             type='str',
@@ -114,6 +107,7 @@ def run_module():
             required=False),
         allow_cleanup=dict(
             type='bool',
+            default=False,
             choices=[True, False],
             required=False),
         parameters=dict(
@@ -136,10 +130,9 @@ def run_module():
     instance = module.params['instance']
     resource_group = module.params["resource_group"]
     target = module.params['target']
-    # Commented until added into the SDK
-    # tags = module.params['tags']
-    # allow_cleanup = module.params['allow_cleanup']
-    # parameters = module.params['parameters']
+    tags = module.params['tags']
+    allow_cleanup = module.params['allow_cleanup']
+    parameters = module.params['parameters']
     resource_plan = module.params['resource_plan']
     state = module.params['state']
 
@@ -160,7 +153,7 @@ def run_module():
         if "id" in check:
             module.exit_json(changed=False, msg=check)
 
-        if resource_plan is None:
+        if not resource_plan:
             payload = {"errors": {"code": "resource_plan is missing"}}
             module.fail_json(msg=payload)
 
@@ -168,7 +161,10 @@ def run_module():
                 name=instance,
                 resource_group=resource_group,
                 target=target,
-                resource_plan=resource_plan
+                resource_plan=resource_plan,
+                tags=tags,
+                allow_cleanup=allow_cleanup,
+                parameters=parameters
         )
 
         if "errors" in result:
