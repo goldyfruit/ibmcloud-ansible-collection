@@ -1,0 +1,10 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: no
+  collections:
+    - ibmcloud.cloud_automation
+
+  tasks:
+    - import_role:
+        name: quickstart-image

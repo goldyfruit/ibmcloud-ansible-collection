@@ -1,0 +1,7 @@
+---
+- name: Create cloud object storage bucket
+  ic_cos_bucket:
+    bucket: "{{ bucket_name }}"
+    service_instance: "{{ service_instance_name }}"
+    mode: "{{ mode_type }}"
+    location: "{{ zone_name }}"
