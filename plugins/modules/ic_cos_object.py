@@ -123,6 +123,7 @@ def run_module():
                      'direct_us_cross_region', 'direct_eu_cross_region',
                      'direct_ap_cross_region', 'single_data_center',
                      'direct_single_data_center'],
+            default='regional',
             required=False),
         location=dict(
             type='str',
@@ -133,6 +134,7 @@ def run_module():
                      'tokyo', 'seoul', 'hong-kong', 'chennai', 'melbourne',
                      'mexico', 'montreal', 'oslo', 'paris', 'sao-paulo',
                      'seoul', 'singapore', 'toronto'],
+            default='us-south',
             required=False),
         service_instance=dict(
             type='str',
@@ -159,7 +161,7 @@ def run_module():
     service_instance = module.params["service_instance"]
     state = module.params["state"]
 
-    sdk_object = sdk.ObjectStorage(
+    sdk_object = sdk.Object(
                     mode=mode,
                     location=location,
                     service_instance=service_instance
@@ -169,9 +171,8 @@ def run_module():
         msg = "path and body are mutually exclusive"
         module.fail_json(changed=False, msg=msg)
 
-    check = sdk_object.get_object(bucket, object)
-
     if state == "absent":
+        check = sdk_object.get_object(bucket, object)
         if "Key" in check:
             result = sdk_object.delete_object(bucket, object)
             if "errors" in result:
@@ -204,7 +205,7 @@ def run_module():
             if "errors" in result:
                 module.fail_json(msg=result)
 
-        module.exit_json(changed=False, msg=result)
+        module.exit_json(changed=True, msg=result)
 
 
 def main():
