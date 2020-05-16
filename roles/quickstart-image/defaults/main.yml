@@ -7,7 +7,6 @@ bucket_name: ibmcloud-bucket-baby
 role_list:
   - Writer
 zone_name: us-south
-mode_type: regional
 image_url: https://download.cirros-cloud.net/0.5.1/cirros-0.5.1-x86_64-disk.img
 image_name: cirros-501-amd64
 image_os_type: centos-7-amd64

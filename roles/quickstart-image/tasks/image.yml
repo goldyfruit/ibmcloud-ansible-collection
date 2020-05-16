@@ -8,11 +8,8 @@
 - name: Upload image file into cloud object storage bucket
   ic_cos_object:
     path: /tmp/cirros-5.0.1-x86_64.qcow2
-    name: "{{ image_name }}.qcow2"
+    object: "{{ image_name }}.qcow2"
     bucket: "{{ bucket_name }}"
-    mode: "{{ mode_type }}"
-    location: "{{ zone_name }}"
-    service_instance: "{{ service_instance_name }}"
   when: image.changed
 
 - name: Create VPC custom image
