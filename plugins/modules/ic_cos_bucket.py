@@ -1,9 +1,13 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # GNU General Public License v3.0+
+# (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk.cis.storage import object_storage as sdk
+from ibmcloud_python_sdk.cis.storage import bucket as sdk
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.1',
@@ -14,58 +18,64 @@ ANSIBLE_METADATA = {
 DOCUMENTATION = r'''
 ---
 module: ic_cos_bucket
-short_description: Manage buckets and objects.
+short_description: Manage COS (Cloud Object Storage) buckets on IBM Cloud.
 author: James Regis (@jregis)
 version_added: "2.9"
 description:
-    - Manage buckets and cloud objects on IBM Cloud.
+  - This module create or delete COS bucket.
+  - By default the module will look for an existing service instance associated
+    to the Cloud Object Storage.
 requirements:
-    - "ibmcloud-python-sdk"
+  - "ibmcloud-python-sdk"
 options:
-    bucket: 
-        description: bucket's name.
-        required: true
-    mode:
-        description: replication mode of the buckets.
-        required: true
-    location:
-        description:
-            -  Geographic bucket location.
-        required: true        
-    service_instance:
-        description:
-            -  Name or UUID of the service_instance associated with the cloud 
-               object storage.
-        required: true
-    grant_full_control: 
-        description: 
-            - Allows grantee the read, write, read ACP, and write ACP 
-            permissions on the bucket. 
-        required: false
-    grant_read: 
-        description:
-        allows grantee to list the objects in the bucket.
-    grant_readacp: 
-        description:
-            - Allows grantee to read the bucket ACL.
-        required: false        
-    grant_write: 
-        description allows grantee to create, overwrite, and delete 
-            any object in the bucket.
-        required: false    
-    grant_write_acp:
-        description:
-            - Allows grantee to write the ACL for the applicable bucket.
-        required: false
-    ibm_sse_kp_encryptions_algorithm: 
-        description:
-            - The encryption algorithm that will be used for objects stored in
-             the newly created bucket. Defaults to 'AES256'.
-        required: false
-    ibm_sse_kp_customer_root_key_crn: 
-        description:
-            - Container for describing the KMS-KP Key CRN.
-        required: false        
+  bucket:
+    description:
+      - Bucket name.
+    type: str
+    required: true
+  mode:
+    description:
+      - Replication mode of the buckets.
+    type: str
+  location:
+    description:
+      - Geographic bucket location.
+    type: str
+  service_instance:
+    description:
+      - Name or GUID of the service instance.
+    type: str
+  grant_full_control:
+    description:
+      - Allows grantee the read, write, read ACP, and write ACP permissions
+        on the bucket.
+    type: str
+  grant_read:
+    description:
+      - Allows grantee to list the objects in the bucket.
+    type: str
+  grant_readacp:
+    description:
+      - Allows grantee to read the bucket ACL.
+    type: str
+  grant_write:
+    description:
+      - Allows grantee to create, overwrite, and delete any object in the
+        bucket.
+    type: str
+  grant_write_acp:
+    description:
+      - Allows grantee to write the ACL for the applicable bucket.
+    type: str
+  ibm_sse_kp_encryptions_algorithm:
+    description:
+      - The encryption algorithm that will be used for objects stored in the
+        newly created bucket.
+    type: str
+  ibm_sse_kp_customer_root_key_crn:
+    description:
+      - Container for describing the KMS-KP Key CRN.
+    type: str
   state:
     description:
       - Should the resource be present or absent.
@@ -75,22 +85,23 @@ options:
 '''
 
 EXAMPLES = r'''
-# Create a bucket
-- ic_cos_bucket:
-    bucket: ibm-bucket-baby
-    mode: regional
-    location: us-south
-    service_instance: my-service-instance-baby
+- name: Create a simple bucket
+  ic_cos_bucket:
+    bucket: ibmcloud-bucket-baby
 
-# Delete a bucket
-- ic_cos_bucket:
-    bucket: ibm-bucket-baby
+- name: Create a bucket in with specific location, service instance and mode
+  ic_cos_bucket:
+    bucket: ibmcloud-bucket-baby
     mode: regional
     location: us-south
-    service_instance: my-service-instance-baby
+    service_instance: ibmcloud-resource-instance-baby
+
+- name: Delete a bucket
+  ic_cos_bucket:
+    bucket: ibmcloud-bucket-baby
     state: absent
-
 '''
+
 
 def run_module():
     module_args = dict(
@@ -99,23 +110,26 @@ def run_module():
             required=True),
         mode=dict(
             type='str',
-            choices=['regional', 'direct_regional', 'cross_region', 
-            'direct_us_cross_region', 'direct_eu_cross_region', 
-            'direct_ap_cross_region', 'single_data_center', 
-            'direct_single_data_center'],
-            required=True),
+            choices=['regional', 'direct_regional', 'cross_region',
+                     'direct_us_cross_region', 'direct_eu_cross_region',
+                     'direct_ap_cross_region', 'single_data_center',
+                     'direct_single_data_center'],
+            default='regional',
+            required=False),
         location=dict(
             type='str',
             choices=['us-south', 'us-east', 'eu-united-kingdom', 'eu-germany',
-            'ap-autralia', 'ap-japan', 'us-cross-region', 'eu-cross-region',
-            'ap-cross-region', 'us', 'dallas', 'san-jose', 'eu', 'amsterdam',
-            'frankfurt', 'milan', 'ap', 'tokyo', 'seoul', 'hong-kong',
-            'chennai', 'melbourne', 'mexico', 'montreal', 'oslo', 'paris', 
-            'sao-paulo', 'seoul', 'singapore', 'toronto'],
+                     'ap-autralia', 'ap-japan', 'us-cross-region',
+                     'eu-cross-region', 'ap-cross-region', 'us', 'dallas',
+                     'san-jose', 'eu', 'amsterdam', 'frankfurt', 'milan', 'ap',
+                     'tokyo', 'seoul', 'hong-kong', 'chennai', 'melbourne',
+                     'mexico', 'montreal', 'oslo', 'paris', 'sao-paulo',
+                     'seoul', 'singapore', 'toronto'],
+            default='us-south',
             required=False),
         service_instance=dict(
             type='str',
-            required=True),
+            required=False),
         acl=dict(
             type='str',
             required=False),
@@ -152,72 +166,62 @@ def run_module():
         supports_check_mode=False
     )
 
-    object_storage = sdk.ObjectStorage()
-
-    bucket = module.params['bucket']
-    mode = module.params['mode']
-    location = module.params['location']
+    bucket = module.params["bucket"]
+    mode = module.params["mode"]
+    location = module.params["location"]
     service_instance = module.params["service_instance"]
-    state = module.params["state"]
-
     acl = module.params["acl"]
     grant_full_control = module.params["grant_full_control"]
     grant_read = module.params["grant_read"]
     grant_read_acp = module.params["grant_read_acp"]
     grant_write = module.params["grant_write"]
     grant_write_acp = module.params["grant_write_acp"]
-    ibm_sse_kp_encryptions_algorithm = module.params["ibm_sse_kp_encryptions_algorithm"]
-    ibm_sse_kp_customer_root_key_crn = module.params["ibm_sse_kp_customer_root_key_crn"]
-    
-    check = object_storage.get_bucket(
-            bucket=bucket,
-            mode=mode,
-            location=location,
-            service_instance=service_instance)
+    ibm_sse_kp_encryptions_algorithm = module.params[
+        "ibm_sse_kp_encryptions_algorithm"]
+    ibm_sse_kp_customer_root_key_crn = module.params[
+        "ibm_sse_kp_customer_root_key_crn"]
+    state = module.params["state"]
 
-    if state == "absent":
-        if "errors" in check:
-            for key in check["errors"]:
-                if key["code"] == "not_found":
-                    module.exit_json(changed=False, msg=(
-                        "bucket {} doesn't exist".format(bucket)))
-                module.exit_json(changed=True, msg=(check))
-            
-        # delete the bucket
-        delete_query = object_storage.delete_bucket(
-                bucket=bucket,
-                mode=mode,
-                location=location,
-                service_instance=service_instance)
-        if "errors" in delete_query:
-            module.fail_json(msg=(delete_query))
-        module.exit_json(changed=True, msg=(
-            "bucket {} successfully deleted").format(bucket))
-        
-    else:      
-        if "errors" in check:
-            for key in check["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=check["errors"])
-                
-                result = object_storage.create_bucket(
-                    bucket=bucket,
+    sdk_bucket = sdk.Bucket(
                     mode=mode,
                     location=location,
-                    service_instance=service_instance,
-                    acl=acl,
-                    grant_full_control=grant_full_control,
-                    grant_read=grant_read,
-                    grant_read_acp=grant_read_acp,
-                    grant_write=grant_write,
-                    grant_write_acp=grant_write_acp,
-                    ibm_sse_kp_encryptions_algorithm=ibm_sse_kp_encryptions_algorithm,
-                    ibm_sse_kp_customer_root_key_crn=ibm_sse_kp_customer_root_key_crn)
-                
-                if "errors" in result:
-                    module.fail_json(msg=result["errors"])
-                module.exit_json(changed=True, msg=(result))
-        module.exit_json(changed=False, msg=(check))
+                    service_instance=service_instance
+                )
+
+    check = sdk_bucket.get_bucket(bucket)
+
+    if state == "absent":
+        if "Name" in check:
+            result = sdk_bucket.delete_bucket(bucket)
+            if "errors" in result:
+                module.fail_json(msg=result)
+
+            payload = {"bucket": bucket, "status": "deleted"}
+            module.exit_json(changed=True, msg=payload)
+
+        payload = {"bucket": bucket, "status": "not_found"}
+        module.exit_json(changed=False, msg=payload)
+    else:
+        if "Name" in check:
+            module.exit_json(changed=False, msg=check)
+
+        result = sdk_bucket.create_bucket(
+            bucket=bucket,
+            acl=acl,
+            grant_full_control=grant_full_control,
+            grant_read=grant_read,
+            grant_read_acp=grant_read_acp,
+            grant_write=grant_write,
+            grant_write_acp=grant_write_acp,
+            ibm_sse_kp_encryptions_algorithm=ibm_sse_kp_encryptions_algorithm,
+            ibm_sse_kp_customer_root_key_crn=ibm_sse_kp_customer_root_key_crn
+        )
+
+        if "errors" in result:
+            module.fail_json(msg=result)
+
+        module.exit_json(changed=True, msg=result)
+
 
 def main():
     run_module()
