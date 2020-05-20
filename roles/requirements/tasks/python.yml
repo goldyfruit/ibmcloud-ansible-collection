@@ -1,10 +1,10 @@
 ---
 - name: Install EPEL repository
-  package:
+  yum:
     name: epel-release
 
 - name: Install Python packages
-  package:
+  yum:
     name:
       - python-pip
       - python-setuptools
