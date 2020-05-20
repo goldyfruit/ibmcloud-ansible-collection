@@ -1,0 +1,4 @@
+---
+sdk_git_repo: advisory-team/ibmcloud-python-sdk.git
+sdk_git_user: "{{ github_ibm_username }}"
+sdk_git_password: "{{ github_ibm_password }}"

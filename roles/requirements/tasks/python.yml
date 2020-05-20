@@ -1,0 +1,6 @@
+---
+- name: Install IBM Cloud Python SDK
+  vars:
+    url: "git+https://{{ sdk_git_username }}:{{ sdk_git_password }}@github.ibm.com/{{ sdk_git_repo }}"
+  pip:
+    name: "{{ url }}"

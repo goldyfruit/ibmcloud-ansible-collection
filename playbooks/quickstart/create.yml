@@ -7,4 +7,6 @@
 
   tasks:
     - import_role:
+        name: requirements
+    - import_role:
         name: quickstart
