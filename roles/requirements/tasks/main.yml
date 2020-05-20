@@ -1,2 +1,3 @@
 ---
 - import_tasks: python.yml
+- import_tasks: credentials.yml
