@@ -6,6 +6,7 @@
 - name: Install Python packages
   yum:
     name:
+      - git
       - python-pip
       - python-setuptools
       - python-virtualenv
