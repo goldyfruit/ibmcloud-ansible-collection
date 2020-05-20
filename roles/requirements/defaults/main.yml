@@ -1,6 +1,6 @@
 ---
 sdk_git_repo: advisory-team/ibmcloud-python-sdk.git
-sdk_git_user: "{{ github_ibm_username }}"
+sdk_git_username: "{{ github_ibm_username }}"
 sdk_git_password: "{{ github_ibm_password }}"
 api_key: "{{ ibm_api_key }}"
 cis_api_key: "{{ ibm_cis_api_key }}"
