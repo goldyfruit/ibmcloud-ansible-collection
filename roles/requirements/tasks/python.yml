@@ -1,6 +1,11 @@
 ---
-- name: Install IBM Cloud Python SDK
+- name: Install IBM Cloud Python SDK and dependencies
   vars:
-    url: "git+https://{{ sdk_git_username }}:{{ sdk_git_password }}@github.ibm.com/{{ sdk_git_repo }}"
+    sdk: "git+https://{{ sdk_git_username }}:{{ sdk_git_password }}@github.ibm.com/{{ sdk_git_repo }}"
   pip:
-    name: "{{ url }}"
+    name:
+      - "{{ sdk }}"
+      - botocore
+      - PyJWT
+      - ibm-cos-sdk
+      - SoftLayer
