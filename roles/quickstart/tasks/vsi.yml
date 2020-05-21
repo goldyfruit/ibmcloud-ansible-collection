@@ -26,6 +26,12 @@
     instance: "{{ vsi_name }}"
     floating_ip: "{{ floating_ip_name }}"
 
+- name: Retrieve floating IP if instance is already created
+  ic_is_instance_fip_info:
+    instance: "{{ vsi_name }}"
+  register: fip_info
+  when: not vsi.changed
+
 - name: Connection information to the VSI
   debug:
     msg: "VSI floating IP: {{ fip_info | json_query('nics[0].floating_ips[0].address') }} | SSH user: root"
