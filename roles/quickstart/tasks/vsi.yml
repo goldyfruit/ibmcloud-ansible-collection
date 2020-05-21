@@ -15,6 +15,7 @@
         capacity: 100
         profile: general-purpose
     zone: "{{ zone_name }}"
+  register: vsi
 
 - name: Attach security group to VSI
   ic_is_instance_security_group:
