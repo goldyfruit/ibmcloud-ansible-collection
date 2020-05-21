@@ -5,6 +5,12 @@
   collections:
     - ibmcloud.cloud_automation
 
+  vars:
+    ibmcloud_file: "{{ lookup('env','HOME') }}/.ibmcloud/clouds.yaml"
+
+  environment:
+    IC_CONFIG_FILE: "{{ ibmcloud_file }}"
+
   tasks:
     - import_role:
         name: quickstart-image
