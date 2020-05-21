@@ -1,16 +1,4 @@
 ---
-- name: Install EPEL repository
-  yum:
-    name: epel-release
-
-- name: Install Python packages
-  yum:
-    name:
-      - git
-      - python-pip
-      - python-setuptools
-      - python-virtualenv
-
 - name: Install IBM Cloud Python SDK
   vars:
     url: "git+https://{{ sdk_git_username }}:{{ sdk_git_password }}@github.ibm.com/{{ sdk_git_repo }}"

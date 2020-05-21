@@ -8,3 +8,4 @@ cis_username: "{{ ibm_cis_username }}"
 profile_name: demo
 region: us-south
 version: 2020-04-07
+config_dir: ~/.ibmcloud
