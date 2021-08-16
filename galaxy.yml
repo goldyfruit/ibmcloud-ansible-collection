@@ -1,14 +1,13 @@
-namespace: ibmcloud
-name: cloud_automation
+namespace: goldyfruit
+name: ibmcloud_automation
 version: 1.0.0
 readme: README.md
 authors:
-  - Gaëtan Trellu <gaetan.trellu@ibm.com>
-  - James Regis <james.regis@ibm.com>
+  - Gaëtan Trellu <gaetan.trellu@gmail.com>
+  - James Regis <james.regis@gmail.com>
 
 description: Modules to interact with features running on IBM Cloud platform.
-license:
-  - MPL-2.0
+
 license_file: 'LICENSE'
 
 tags:
@@ -25,10 +24,10 @@ tags:
 dependencies:
   community.general: "*"
 
-repository: https://github.com/IBM-Cloud/ibmcloud-ansible
+repository: https://github.com/goldyfruit/ibmcloud-ansible-collection
 documentation:
-homepage:
-issues: https://github.com/IBM-Cloud/ibmcloud-ansible/issues
+homepage: https://github.com/goldyfruit/ibmcloud-ansible-collection
+issues: https://github.com/goldyfruit/ibmcloud-ansible-collection/issues
 
 build_ignore:
   - venv

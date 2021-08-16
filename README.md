@@ -43,7 +43,6 @@ Multiple account credentials could be provided, `default` option receives the ac
 ## Requirements
 
 - **ibmcloud-python-sdk>=1.0.0+**
-- **botocore==1.16.9**
 - Python 3.6+
 - Ansible 2.9+
 
