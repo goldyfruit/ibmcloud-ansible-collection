@@ -2,7 +2,7 @@
 
 This collection allows interactions with IBM Cloud VPC, Classic Infrastructure, etc... Modules will consume resources and make sure idempotency is respected as it should.
 
-This collection leverage IBM Cloud Python SDK(https://pypi.org/project/ibmcloud-python-sdk)
+This collection leverage [IBM Cloud Python SDK](https://pypi.org/project/ibmcloud-python-sdk)
 
 ## Requirements
 
