@@ -3,7 +3,7 @@
   connection: local
   gather_facts: no
   collections:
-    - ibmcloud.cloud_automation
+    - goldyfruit.ibmcloud_automation
 
   vars:
     ibmcloud_file: "{{ lookup('env','HOME') }}/.ibmcloud/clouds.yaml"
@@ -13,4 +13,4 @@
 
   tasks:
     - import_role:
-        name: quickstart-image
+        name: quickstart_image

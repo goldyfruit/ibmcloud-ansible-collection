@@ -13,13 +13,13 @@ IBM Cloud API keys are required, to setup keys please have a look at the officia
 
 To setup credential please reead the [documentation](https://github.com/goldyfruit/ibmcloud-python-sdk).
 
-- ibmcloud-python-sdk
-- Ansible 2.9+
+- ibmcloud-python-sdk >= 1.0.0
+- ansible >= 2.9
 
 ## Install
 
 ```shell
-ansible-galaxy collection install goldyfruit.ibmcloud_automation
+$ ansible-galaxy collection install goldyfruit.ibmcloud_automation
 ```
 
 The collection will be automatically installed in `~/.ansible/collections/ansible_collections/goldyfruit/` directory.
