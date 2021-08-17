@@ -50,6 +50,7 @@ The collection will be automatically installed in `~/.ansible/collections/ansibl
     - import_role:
         name: quickstart
 ```
+
 ### Upload QCOW2 image for VPC
 
 ```yaml
