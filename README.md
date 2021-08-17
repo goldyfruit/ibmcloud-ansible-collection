@@ -28,7 +28,7 @@ $ ansible-galaxy collection install goldyfruit.ibmcloud_automation
 
 The collection will be automatically installed in `~/.ansible/collections/ansible_collections/goldyfruit/` directory.
 
-## Exmaples
+## Examples
 
 ### Create VPC and VSI
 
