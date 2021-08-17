@@ -48,10 +48,7 @@ options:
   cidr:
     description:
       - Restrict results to specific CIDR.
-<<<<<<< HEAD
     type: str
-=======
->>>>>>> 180e10d ([ic_is_vpn_cidr_info] Add module)
 '''
 
 EXAMPLES = r'''

@@ -46,7 +46,7 @@ options:
         instances. Load balancers in the application family support IP
         addresses.
     type: dict
-    suboptions
+    suboptions:
       instance:
         description:
           - The identity of the instance to be targeted by the pool member

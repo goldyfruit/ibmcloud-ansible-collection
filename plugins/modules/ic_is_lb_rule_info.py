@@ -31,8 +31,8 @@ options:
   lb:
     description:
       - Load balancer name or ID.
-      type: str
-      required: true
+    type: str
+    required: true
   listener:
     description:
       - Listener port or ID

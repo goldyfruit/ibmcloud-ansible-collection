@@ -22,7 +22,7 @@ module: ic_iam_role_info
 short_description: Retrieve IAM roles on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
-description:
+description: |
   - While managing roles, you may want to retrieve roles and filter by usages.
     This can be done through query parameters. Currently, we only support the
     following attributes: account_id, and service_name.
@@ -36,7 +36,7 @@ options:
     description:
       - The role name or ID.
     type: str
-  service
+  service:
     description:
       - Service name where to list the role.
     type: str

@@ -57,7 +57,7 @@ options:
           - Dead Peer Detection interval in seconds.
         type: int
         default: 2
-      timeout
+      timeout:
         description:
           - Dead Peer Detection timeout in seconds. Must be at least the
             interval.

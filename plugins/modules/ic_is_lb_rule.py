@@ -29,8 +29,8 @@ options:
   lb:
     description:
       - Load balancer name or ID.
-    type: str
-    required: true
+  type: str
+  required: true
   listeners:
     description:
       - Listener port or ID
@@ -59,7 +59,7 @@ options:
       - The type of the rule.
     type: str
     choices: [header, hostname, path]
-  value
+  value:
     description:
       - Value to be matched for rule condition.
     type: str
