@@ -75,7 +75,7 @@ options:
           type: str
           required: true
           choices: [header, hostname, path]
-        value
+        value:
           description:
             - Value to be matched for rule condition.
           type: str
@@ -86,16 +86,16 @@ options:
         type: dict
         suboptions:
           id:
-            description
+            description:
               - Identifies a load balancer pool by ID property.
             type: str
           http_status_code:
-            description
+            description:
               - The http status code in the redirect response.
             type: int
           choices: [301, 302, 303, 307, 308]
           url:
-            description
+            description:
               - The redirect target URL.
             type: str
   protocol:

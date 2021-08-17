@@ -58,7 +58,7 @@ options:
           - The pool member target.
         type: dict
         required: true
-        suboptions
+        suboptions:
           instance:
             description:
               - The unique identifier for this virtual server instance.

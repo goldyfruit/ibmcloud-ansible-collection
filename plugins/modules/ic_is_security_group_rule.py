@@ -60,7 +60,7 @@ options:
     description:
       - The protocol to enforce.
     type: str
-    choices: [all, icmp, tcp, udp],
+    choices: [all, icmp, tcp, udp]
   port_min:
     description:
       - For a single port, set C(port_max) to the same value.

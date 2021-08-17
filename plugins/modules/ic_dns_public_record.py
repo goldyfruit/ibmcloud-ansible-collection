@@ -58,7 +58,6 @@ EXAMPLES = '''
     state: absent
 '''
 
-
 def run_module():
     module_args = dict(
         zone=dict(
@@ -91,6 +90,7 @@ def run_module():
     )
 
     dns = sdk.Dns()
+
     ttl_min = 60
     ttl_max = 604800
 

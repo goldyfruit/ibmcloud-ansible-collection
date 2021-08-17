@@ -64,7 +64,7 @@ options:
     description:
       - The public gateway to handle internet bound traffic for this subnet.
     type: str
-  routing_table
+  routing_table:
     description:
       - The routing table to use for this subnet; if unspecified, the default
         routing table for the VPC is used.

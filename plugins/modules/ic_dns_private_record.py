@@ -33,7 +33,7 @@ options:
             -  Name or UUID of the resource instance that hosts thw DNS.
         required: false
     record:
-        description:
+        description: |
             -  JSON structure representing the record to add in the DNS.
             {
               "name": "testA",
