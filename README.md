@@ -13,8 +13,8 @@ IBM Cloud API keys are required, to setup keys please have a look at the officia
 
 To setup credential please reead the [documentation](https://github.com/goldyfruit/ibmcloud-python-sdk).
 
-- ibmcloud-python-sdk >= 1.0.0
-- ansible >= 2.9
+- `ibmcloud-python-sdk` >= `1.0.0`
+- `ansible` >= `2.9`
 
 ```shell
 $ pip install ansible ibmcloud-python-sdk
