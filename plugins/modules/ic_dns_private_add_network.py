@@ -64,23 +64,6 @@ EXAMPLES = r'''
     state: absent
 '''
 
-dns = sdk.Dns()
-
-#def _check_zone(module):
-#    #module.exit_json(changed=False, msg="ceci est un message {}".format(module.params["dns_zone"]))
-#    result = dns.get_dns_zone(dns_zone=module.params["dns_zone"],
-#            resource_instance=module.params["resource_instance"])
-#
-#    msg = ("zone {} already exists in resource instance {}".format(
-#        module.params["dns_zone"],
-#        module.params["resource_instance"]))
-#
-#    if "errors" in result:
-#        for key in result["errors"]:
-#                if key["code"] != "not_found":
-#                    module.fail_json(msg=result["errors"])
-#    else:
-#        module.exit_json(changed=False, msg=msg)
 
 def run_module():
     module_args = dict(
@@ -106,17 +89,18 @@ def run_module():
         supports_check_mode=False
     )
 
+    dns = sdk.Dns()
 
-    
     dns_zone = module.params['dns_zone']
     resource_instance = module.params["resource_instance"]
     vpc = module.params['vpc']
     state = module.params['state']
 
     if state == "absent":
-        result = dns.delete_permitted_network(dns_zone=dns_zone,
-                resource_instance=resource_instance,
-                vpc=vpc)
+        result = dns.delete_permitted_network(
+            dns_zone=dns_zone,
+            resource_instance=resource_instance,
+            vpc=vpc)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -124,23 +108,27 @@ def run_module():
                     module.fail_json(msg=result["errors"])
                 else:
                     module.exit_json(changed=False, msg=(
-                        "The vpc {} is not attached with zone {} ").format(vpc, dns_zone))
+                        "The vpc {} is not attached with zone {} ").format(
+                            vpc, dns_zone))
 
         module.exit_json(changed=True, msg=(
-            "The vpc {} is successfully detached from zone {}").format(vpc, dns_zone))
-
+            "The vpc {} is successfully detached from zone {}").format(
+                vpc, dns_zone))
     else:
-        
-        result = dns.add_permitted_network(dns_zone=dns_zone,
-                                resource_instance=resource_instance,
-                                vpc=vpc)
+        result = dns.add_permitted_network(
+            dns_zone=dns_zone,
+            resource_instance=resource_instance,
+            vpc=vpc)
 
         if "errors" in result:
             for key in result["errors"]:
                 if key["code"] != "resource_already_exists":
                     module.fail_json(msg=result["errors"])
                 else:
-                    module.exit_json(changed=False, msg=("The VPC {} is already attached to the zone {}").format(vpc, dns_zone))
+                    module.exit_json(
+                        changed=False, msg=(
+                            "The VPC {} is already attached to the zone {}"
+                        ).format(vpc, dns_zone))
         else:
             module.exit_json(changed=True, msg=(result))
 

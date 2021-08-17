@@ -45,7 +45,7 @@ options:
         required: true
     record_name:
         description:
-            -  Record name to delete (fqdn). 
+            -  Record name to delete (fqdn).
         required: true
     record_id:
         description:
@@ -60,7 +60,7 @@ options:
 '''
 
 EXAMPLES = r'''
-# Create an A DNS record 
+# Create an A DNS record
 - ic_dns_private_record:
     dns_zone: ibmcloud-dns-baby
     resource_instance: ibmcloud-rg-baby
@@ -78,6 +78,7 @@ EXAMPLES = r'''
     resource_instance: ibmcloud-rg-baby
     state: absent
 '''
+
 
 def run_module():
     module_args = dict(
@@ -108,9 +109,8 @@ def run_module():
         supports_check_mode=False
     )
 
-
     dns = sdk.Dns()
-    
+
     dns_zone = module.params['dns_zone']
     resource_instance = module.params["resource_instance"]
     record = module.params['record']
@@ -120,10 +120,10 @@ def run_module():
 
     if state == "absent":
         if record_name:
-            result = dns.delete_resource_record(dns_zone=dns_zone,
-                    resource_instance=resource_instance,
-                    record=record_name)
-    
+            result = dns.delete_resource_record(
+                dns_zone=dns_zone,
+                resource_instance=resource_instance,
+                record=record_name)
             if "errors" in result:
                 for key in result["errors"]:
                     if key["code"] != "not_found":
@@ -131,18 +131,19 @@ def run_module():
                     else:
                         module.exit_json(changed=False, msg=(
                             "record {} doesn't exist").format(record_name))
-    
+
         module.exit_json(changed=True, msg=(
             "record {} successfully deleted").format(record_name))
 
     else:
-        if record == None:
+        if not record:
             module.fail_json(msg="You must provide records data")
 
         record["rdata"] = record["rdata"][0]
-        result = dns.create_resource_record(dns_zone=dns_zone,
-                                resource_instance=resource_instance,
-                                record=record)
+        result = dns.create_resource_record(
+            dns_zone=dns_zone,
+            resource_instance=resource_instance,
+            record=record)
         if "errors" in result:
             for key in result["errors"]:
                 if key["code"] != "resource_already_exists":

@@ -71,9 +71,11 @@ EXAMPLES = r'''
 
 dns = sdk.Dns()
 
+
 def _check_zone(module):
-    result = dns.get_dns_zone(dns_zone=module.params["dns_zone"],
-            resource_instance=module.params["resource_instance"])
+    result = dns.get_dns_zone(
+        dns_zone=module.params["dns_zone"],
+        resource_instance=module.params["resource_instance"])
 
     msg = ("The zone {} already exists in resource instance {}".format(
         module.params["dns_zone"],
@@ -81,10 +83,11 @@ def _check_zone(module):
 
     if "errors" in result:
         for key in result["errors"]:
-                if key["code"] != "not_found":
-                    module.fail_json(msg=result["errors"])
+            if key["code"] != "not_found":
+                module.fail_json(msg=result["errors"])
     else:
         module.exit_json(changed=False, msg=msg)
+
 
 def run_module():
     module_args = dict(
@@ -118,8 +121,6 @@ def run_module():
         supports_check_mode=False
     )
 
-
-    
     dns_zone = module.params['dns_zone']
     resource_instance = module.params["resource_instance"]
     description = module.params['description']
@@ -128,8 +129,9 @@ def run_module():
     unique = module.params['unique']
 
     if state == "absent":
-        result = dns.delete_zone(dns_zone=dns_zone,
-                resource_instance=resource_instance)
+        result = dns.delete_zone(
+            dns_zone=dns_zone,
+            resource_instance=resource_instance)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -141,15 +143,14 @@ def run_module():
 
         module.exit_json(changed=True, msg=(
             "zone {} successfully deleted").format(dns_zone))
-
     else:
-        if unique: 
+        if unique:
             _check_zone(module)
-    
+
         result = dns.create_zone(dns_zone=dns_zone,
-                                resource_instance=resource_instance,
-                                description=description,
-                                label=label)
+                                 resource_instance=resource_instance,
+                                 description=description,
+                                 label=label)
 
         if "errors" in result:
             module.fail_json(msg=result["errors"])

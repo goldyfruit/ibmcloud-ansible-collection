@@ -44,6 +44,7 @@ EXAMPLES = r'''
     resource_instance: ibmcloud-rg-baby
 '''
 
+
 def run_module():
     module_args = dict(
         dns_zone=dict(
@@ -60,14 +61,13 @@ def run_module():
     )
 
     dns = sdk.Dns()
-    
+
     dns_zone = module.params["dns_zone"]
     resource_instance = module.params["resource_instance"]
 
-
     if dns_zone:
-        result = dns.get_dns_zone(dns_zone=dns_zone, 
-                resource_instance=resource_instance)
+        result = dns.get_dns_zone(dns_zone=dns_zone,
+                                  resource_instance=resource_instance)
 
         if "errors" in result:
             for key in result["errors"]:
@@ -76,9 +76,7 @@ def run_module():
                 else:
                     module.exit_json(changed=False, msg=(
                        "zone {} doesn't exist").format(dns_zone))
-    
         module.exit_json(changed=True, msg=(result))
-
     else:
         result = dns.get_dns_zones(resource_instance=resource_instance)
 
@@ -91,6 +89,7 @@ def run_module():
                        "zone {} doesn't exist").format(dns_zone))
 
         module.exit_json(changed=True, msg=(result))
+
 
 def main():
     run_module()

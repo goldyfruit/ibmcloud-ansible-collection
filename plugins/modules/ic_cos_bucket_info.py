@@ -28,10 +28,10 @@ options:
     location:
         description:
             -  Geographic bucket location.
-        required: true        
+        required: true
     service_instance:
         description:
-            -  Name or UUID of the service_instance associated with the cloud 
+            -  Name or UUID of the service_instance associated with the cloud
                object storage.
         required: true
 '''
@@ -41,26 +41,28 @@ EXAMPLES = r'''
 - ic_cos_info:
     mode: regional
     location: us-south
-    service_instance: my-service-instance-baby 
+    service_instance: my-service-instance-baby
 '''
+
 
 def run_module():
     module_args = dict(
         mode=dict(
             type='str',
-            choices=['regional', 'direct_regional', 'cross_region', 
-            'direct_us_cross_region', 'direct_eu_cross_region', 
-            'direct_ap_cross_region', 'single_data_center', 
-            'direct_single_data_center'],
+            choices=['regional', 'direct_regional', 'cross_region',
+                     'direct_us_cross_region', 'direct_eu_cross_region',
+                     'direct_ap_cross_region', 'single_data_center',
+                     'direct_single_data_center'],
             required=True),
         location=dict(
             type='str',
             choices=['us-south', 'us-east', 'eu-united-kingdom', 'eu-germany',
-            'ap-autralia', 'ap-japan', 'us-cross-region', 'eu-cross-region',
-            'ap-cross-region', 'us', 'dallas', 'san-jose', 'eu', 'amsterdam',
-            'frankfurt', 'milan', 'ap', 'tokyo', 'seoul', 'hong-kong',
-            'chennai', 'melbourne', 'mexico', 'montreal', 'oslo', 'paris', 
-            'sao-paulo', 'seoul', 'singapore', 'toronto'],
+                     'ap-autralia', 'ap-japan', 'us-cross-region',
+                     'eu-cross-region', 'ap-cross-region', 'us', 'dallas',
+                     'san-jose', 'eu', 'amsterdam', 'frankfurt', 'milan', 'ap',
+                     'tokyo', 'seoul', 'hong-kong', 'chennai', 'melbourne',
+                     'mexico', 'montreal', 'oslo', 'paris', 'sao-paulo',
+                     'seoul', 'singapore', 'toronto'],
             required=False),
         service_instance=dict(
             type='str',
@@ -79,7 +81,7 @@ def run_module():
     service_instance = module.params["service_instance"]
 
     check = object_storage.get_buckets(mode=mode, location=location,
-        service_instance=service_instance)
+                                       service_instance=service_instance)
 
     if "errors" in check:
         for key in check["errors"]:
@@ -91,6 +93,7 @@ def run_module():
                         service_instance)))
 
     module.exit_json(changed=True, msg=(check))
+
 
 def main():
     run_module()

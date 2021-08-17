@@ -58,6 +58,7 @@ EXAMPLES = '''
     state: absent
 '''
 
+
 def run_module():
     module_args = dict(
         zone=dict(
@@ -90,7 +91,7 @@ def run_module():
     )
 
     dns = sdk.Dns()
-    ttl_min = 60  
+    ttl_min = 60
     ttl_max = 604800
 
     zone = module.params['zone']
@@ -116,7 +117,9 @@ def run_module():
 
     else:
         if not (ttl_min <= ttl <= ttl_max):
-            module.fail_json(msg="provide a TTL value between {} and {}".format(ttl_min, ttl_max))
+            module.fail_json(
+                msg="provide a TTL value between {} and {}".format(
+                    ttl_min, ttl_max))
         result = dns.get_record(record=record, zone=zone)
         if "errors" in result:
             for key_name in result["errors"]:
@@ -129,6 +132,7 @@ def run_module():
                             "record {} successfully created").format(record))
         module.exit_json(changed=False, msg=(
             "record {} already exist").format(record))
+
 
 def main():
     run_module()

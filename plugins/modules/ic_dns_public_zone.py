@@ -62,6 +62,7 @@ EXAMPLES = '''
     state: absent
 '''
 
+
 def run_module():
     module_args = dict(
         zone=dict(
@@ -85,9 +86,8 @@ def run_module():
     )
 
     dns = sdk.Dns()
-    
+
     zone = module.params['zone']
-    check_availability = module.params["check_availability"]
     state = module.params['state']
 
     if state == "absent":
@@ -115,7 +115,8 @@ def run_module():
                                 "zone {} successfully created".format(zone)))
                         module.fail_json(changed=False, msg=(
                             "errot while creating zone {}")).format(zone)
-        module.exit_json(changed=False, msg=("zone {} already exists".format(zone)))
+        module.exit_json(changed=False,
+                         msg=("zone {} already exists".format(zone)))
 
 
 def main():
