@@ -1,6 +1,6 @@
 namespace: goldyfruit
 name: ibmcloud_automation
-version: 1.0.0
+version: 1.0.1
 readme: README.md
 authors:
   - Gaëtan Trellu <gaetan.trellu@gmail.com>
