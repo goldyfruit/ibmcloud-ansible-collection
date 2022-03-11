@@ -1,5 +1,0 @@
----
-- import_tasks: instance.yml
-- import_tasks: authz.yml
-- import_tasks: bucket.yml
-- import_tasks: image.yml

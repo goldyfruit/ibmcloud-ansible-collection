@@ -1,4 +1,0 @@
----
-- name: Create cloud object storage bucket
-  ic_cos_bucket:
-    bucket: "{{ bucket_name }}"

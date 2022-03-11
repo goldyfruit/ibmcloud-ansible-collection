@@ -1,6 +1,0 @@
----
-- name: Reserve floating IP
-  ic_is_floating_ip:
-    fip: "{{ floating_ip_name }}"
-    zone: "{{ zone_name }}"
-    resource_group: "{{ resource_group_name | default(omit) }}"
