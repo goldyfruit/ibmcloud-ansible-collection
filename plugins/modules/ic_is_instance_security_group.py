@@ -122,7 +122,7 @@ def run_module():
             module.fail_json(msg=nic_info)
         target = nic_info["id"]
 
-    check = security.get_security_group_interface(group, target)
+    check = security.get_security_group_target(group, target)
 
     if state == "absent" or state == "detach":
         if "id" in check:
