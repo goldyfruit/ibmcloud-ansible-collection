@@ -24,6 +24,7 @@ version_added: "2.9"
 description:
   - Retrieve detailed information about VPC (Virtual Provate Cloud) Baremetal
     from IBM Cloud.
+    Will also provide the host password if the ssh-key is provided.
 notes:
   - The result contains a list of Baremetal instances.
 requirements:
@@ -32,6 +33,10 @@ options:
   instance:
     description:
       - Restrict results to instance with ID or name matching.
+    type: str
+  ssh_key:
+    description:
+      - SSH key used to encrypt baremetal password
     type: str
 '''
 
@@ -42,6 +47,7 @@ EXAMPLES = r'''
 - name: Retrieve specific baremetal instance
   ic_is_baremetal_info:
     instance: ibmcloud-vsi-baby
+    ssh_key: "/home/user/.ssh/id_rsa"
 '''
 
 
@@ -50,6 +56,9 @@ def run_module():
         instance=dict(
             type='str',
             required=False),
+        ssh_key=dict(
+            type='str',
+            required=False)
     )
 
     module = AnsibleModule(
@@ -60,16 +69,53 @@ def run_module():
     baremetal_instance = sdk.Baremetal()
 
     instance = module.params['instance']
+    ssh_key = module.params['ssh_key']
 
     if instance:
         result = baremetal_instance.get_server(instance)
         if "errors" in result:
             module.fail_json(msg=result)
+        configuration = baremetal_instance.get_server_configuration(
+            instance)
+        if "errors" in configuration:
+            module.fail_json(msg=configuration)
+        encrypted_password = configuration['user_accounts'][0]['encrypted_password']
+        if ssh_key:
+            decode_password_cmd = "echo {0} | base64 -d | openssl pkeyutl -decrypt -inkey {1} -pkeyopt rsa_mgf1_md:sha256".format(
+                encrypted_password,
+                ssh_key)
+            decoded_password = module.run_command(
+                decode_password_cmd,
+                use_unsafe_shell=True)
+            password = decoded_password[1]
+        if not ssh_key:
+            password = encrypted_password
+        result["password"] = password
+        result["username"] = configuration["user_accounts"][0]["username"]
+        result["key_name"] = configuration["keys"][0]["name"]
     else:
         result = baremetal_instance.get_servers()
         if "errors" in result:
             module.fail_json(msg=result)
-
+        for baremetal in result['bare_metal_servers']:
+            configuration = baremetal_instance.get_server_configuration(
+                baremetal["id"])
+            if "errors" in configuration:
+                module.fail_json(msg=configuration)
+            encrypted_password = configuration['user_accounts'][0]['encrypted_password']
+            if ssh_key:
+                decode_password_cmd = "echo {0} | base64 -d | openssl pkeyutl -decrypt -inkey {1} -pkeyopt rsa_mgf1_md:sha256".format(
+                    encrypted_password,
+                    ssh_key)
+                decoded_password = module.run_command(
+                    decode_password_cmd,
+                    use_unsafe_shell=True)
+                password = decoded_password[1]
+            if not ssh_key:
+                password = encrypted_password
+            baremetal["password"] = password
+            baremetal["username"] = configuration["user_accounts"][0]["username"]
+            baremetal["key_name"] = configuration["keys"][0]["name"]
     module.exit_json(**result)
 
 
