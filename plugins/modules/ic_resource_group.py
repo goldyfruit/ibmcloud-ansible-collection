@@ -6,7 +6,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource_group as sdk
+from ibmcloud_python_sdk.resource import resource_group as sdk
 
 
 ANSIBLE_METADATA = {
@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_is_resource_group
+module: ic_resource_group
 short_description: Manage VPC resource groups on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -46,12 +46,12 @@ options:
 
 EXAMPLES = r'''
 - name: Create resource group
-  ic_is_resource_group:
+  ic_resource_group:
     group: ibmcloud-resource-group-new-baby
     account_id: 9aa205e454574e8484b3ca8c2ff33d83
 
 - name: Delete resource group
-  ic_is_resource_group:
+  ic_resource_group:
     group: ibmcloud-resource-group-new-baby
     account_id: 9aa205e454574e8484b3ca8c2ff33d83
     state: absent
@@ -78,7 +78,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    resource = sdk.Resource()
+    resource = sdk.ResourceGroup()
 
     group = module.params['group']
     account_id = module.params["account_id"]

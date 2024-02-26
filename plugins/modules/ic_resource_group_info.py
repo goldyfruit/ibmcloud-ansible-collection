@@ -6,7 +6,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource_group as sdk
+from ibmcloud_python_sdk.resource import resource_group as sdk
 
 
 ANSIBLE_METADATA = {
@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_is_resource_group_info
+module: ic_resource_group_info
 short_description: Retrieve available resource groups on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -40,14 +40,14 @@ options:
 
 EXAMPLES = r'''
 - name: Retrieve resource group list
-  ic_is_resource_group_info:
+  ic_resource_group_info:
 
 - name: Retrieve specific resource group
-  ic_is_resource_group_info:
+  ic_resource_group_info:
     group: ibmcloud-rg-baby
 
 - name: Retrieve resource group list for specific account
-  ic_is_resource_group_info:
+  ic_resource_group_info:
     account: a3d7b8d01e261c24677937c29ab33f3c
 '''
 
@@ -67,7 +67,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    resource = sdk.Resource()
+    resource = sdk.ResourceGroup()
 
     group = module.params['group']
     account = module.params['account']
