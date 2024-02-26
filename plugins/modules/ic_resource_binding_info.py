@@ -17,7 +17,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = r'''
 ---
-module: ic_is_resource_binding_info
+module: ic_resource_binding_info
 short_description: Retrieve available resource bindings on IBM Cloud.
 author: Gaëtan Trellu (@goldyfruit)
 version_added: "2.9"
@@ -36,10 +36,10 @@ options:
 
 EXAMPLES = r'''
 - name: Retrieve resource binding list
-  ic_is_resource_binding_info:
+  ic_resource_binding_info:
 
 - name: Retrieve specific resource binding
-  ic_is_resource_binding_info:
+  ic_resource_binding_info:
     binding: ibmcloud-rb-baby
 '''
 

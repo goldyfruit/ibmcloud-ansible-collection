@@ -6,7 +6,7 @@
 
 
 from ansible.module_utils.basic import AnsibleModule
-from ibmcloud_python_sdk import resource_group as sdk
+from ibmcloud_python_sdk.resource import resource_group as sdk
 
 
 ANSIBLE_METADATA = {
@@ -56,7 +56,7 @@ def run_module():
         supports_check_mode=False
     )
 
-    resource = sdk.Resource()
+    resource = sdk.ResourceGroup()
 
     quota = module.params['quota']
 
