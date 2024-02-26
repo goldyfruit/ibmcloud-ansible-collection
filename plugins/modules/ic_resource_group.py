@@ -102,7 +102,7 @@ def run_module():
             module.exit_json(changed=False, msg=check)
 
         result = resource.create_group(
-            group=group,
+            name=group,
             account_id=account_id
         )
 
