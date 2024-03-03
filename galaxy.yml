@@ -1,6 +1,6 @@
 namespace: goldyfruit
 name: ibmcloud_automation
-version: 1.0.2
+version: 1.0.3
 readme: README.md
 authors:
   - Gaëtan Trellu <gaetan.trellu@gmail.com>
@@ -8,7 +8,7 @@ authors:
 
 description: Modules to interact with features running on IBM Cloud platform.
 
-license_file: 'LICENSE'
+license_file: "LICENSE"
 
 tags:
   - ibmcloud
@@ -25,7 +25,7 @@ dependencies:
   community.general: "*"
 
 repository: https://github.com/goldyfruit/ibmcloud-ansible-collection
-documentation:
+documentation: https://github.com/goldyfruit/ibmcloud-ansible-collection
 homepage: https://github.com/goldyfruit/ibmcloud-ansible-collection
 issues: https://github.com/goldyfruit/ibmcloud-ansible-collection/issues
 
