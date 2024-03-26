@@ -65,6 +65,13 @@ options:
       - Configuration options represented as key-value pairs that are passed
         through to the target resource brokers.
     type: str
+  recursive:
+    description:
+      - A boolean that dictates if resource service instance belonging
+        resources should be deleted as well.
+    type: bool
+    default: false
+    choices: [true, false]
   state:
     description:
       - Should the resource be present or absent.
@@ -84,6 +91,12 @@ EXAMPLES = r'''
 - name: Delete resource instance
   ic_resource_instance:
     instance: ibmcloud-resource-instance-baby
+    state: absent
+
+- name: Delete resource instance and its belonging resources
+  ic_resource_instance:
+    instance: ibmcloud-resource-instance-baby
+    recursive: true
     state: absent
 '''
 
@@ -113,6 +126,11 @@ def run_module():
         parameters=dict(
             type='str',
             required=False),
+        recursive=dict(
+            type='bool',
+            default=False,
+            choices=[True, False],
+            required=False),
         state=dict(
             type='str',
             default='present',
@@ -133,6 +151,7 @@ def run_module():
     tags = module.params['tags']
     allow_cleanup = module.params['allow_cleanup']
     parameters = module.params['parameters']
+    recursive = module.params['recursive']
     resource_plan = module.params['resource_plan']
     state = module.params['state']
 
@@ -140,7 +159,8 @@ def run_module():
 
     if state == "absent":
         if "id" in check:
-            result = resource_instance.delete_resource_instance(instance)
+            result = resource_instance.delete_resource_instance(
+                instance, recursive=recursive)
             if "errors" in result:
                 module.fail_json(msg=result)
 
